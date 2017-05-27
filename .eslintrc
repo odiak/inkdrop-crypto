@@ -1,0 +1,16 @@
+{
+  "root": true,
+  "extends": [ "standard" ],
+  "plugins": [ ],
+  "parser": "babel-eslint",
+  "env": {
+    "browser": true,
+    "es6": true,
+    "mocha": true,
+    "node": true
+  },
+  "globals": {
+  },
+  "rules": {
+  }
+}
