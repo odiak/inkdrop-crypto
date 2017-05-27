@@ -1,1 +1,1 @@
-export * from './enryption'
+export * from './encryption'
