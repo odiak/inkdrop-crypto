@@ -1,5 +1,5 @@
 {
-  "name": "inkdrop-encrypt",
+  "name": "@craftzdog/inkdrop-encrypt",
   "version": "1.0.0",
   "description": "",
   "main": "lib/index.js",
