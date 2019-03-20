@@ -1,0 +1,24 @@
+[ignore]
+.*/node_modules/fbjs/flow/.*
+.*/node_modules/fbjs/.*/*.flow
+.*/node_modules/flux/flow/.*
+.*/node_modules/graphql/.*/*.flow
+.*/node_modules/conventional-changelog-core/.*
+.*/node_modules/immutable/.*
+
+[include]
+
+[libs]
+./interfaces/crypto.js
+
+[options]
+module.file_ext=.coffee
+module.file_ext=.less
+module.file_ext=.js
+module.file_ext=.jsx
+module.file_ext=.json
+
+# module.system=haste
+# module.system.node.resolve_dirname=lib
+
+# esproposal.decorators=ignore

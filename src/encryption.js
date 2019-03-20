@@ -1,136 +1,145 @@
+// @flow
 import logger from './logger'
-import crypto from 'crypto'
 import pick from 'lodash.pick'
-import { genKey, encrypt, decrypt } from './crypto'
+import { EncryptError, DecryptError } from './types'
+import CryptoBase from './crypto'
+import type { EncryptionKey } from './types'
 
-class DecryptError extends Error {
-  constructor(message) {
-    super(message)
-    this.name = 'DecryptError'
+const fieldsToEncrypt = ['title', 'body', 'name']
+
+export default class InkdropEncryption extends CryptoBase {
+  /**
+   * @returns {object} The masked encryption key
+   */
+  maskEncryptionKey(
+    password: string,
+    salt: string,
+    encryptionKey: string | Buffer
+  ): EncryptionKey {
+    const key = this.genKey(password, salt, 128)
+    return {
+      salt,
+      ...this.encrypt(key, encryptionKey, {
+        inputEncoding: 'utf8',
+        outputEncoding: 'base64'
+      })
+    }
   }
-}
 
-class EncryptError extends Error {
-  constructor(message) {
-    super(message)
-    this.name = 'EncryptError'
+  /**
+   * @returns {object} The masked encryption key
+   */
+  createEncryptionKey(password: string): EncryptionKey {
+    const { crypto } = this
+    if (typeof password !== 'string') {
+      throw new EncryptError('The new password must be a string')
+    }
+    const salt = crypto.randomBytes(16).toString('hex')
+    const key = crypto.randomBytes(16).toString('hex')
+    return this.maskEncryptionKey(password, salt, key)
   }
-}
 
-/**
- * @returns {object} The masked encryption key
- */
-export function maskEncryptionKey(password, salt, encryptionKey) {
-  const key = genKey(password, salt, 128)
-  return {
-    salt,
-    ...encrypt(key, encryptionKey, {
+  /**
+   * @returns {string} The encryption key
+   */
+  revealEncryptionKey(
+    password: string,
+    encryptionKeyData: EncryptionKey
+  ): string {
+    if (typeof password !== 'string') {
+      throw new DecryptError('The new password must be a string')
+    }
+    if (typeof encryptionKeyData !== 'object') {
+      throw new DecryptError('The encryption key data must be an object')
+    }
+    const { salt } = encryptionKeyData
+    const key = this.genKey(password, salt, 128)
+    const revealedKey = this.decrypt(key, encryptionKeyData, {
+      inputEncoding: 'base64',
+      outputEncoding: 'utf8'
+    })
+    if (typeof revealedKey === 'string') {
+      return revealedKey
+    } else {
+      throw new DecryptError('Invalid encryption key')
+    }
+  }
+
+  /**
+   * @returns {object} The masked encryption key
+   */
+  updateEncryptionKey(
+    oldPassword: string,
+    password: string,
+    encryptionKeyData: EncryptionKey
+  ) {
+    if (typeof oldPassword !== 'string') {
+      throw new DecryptError('The old password must be a string')
+    }
+    if (typeof password !== 'string') {
+      throw new EncryptError('The new password must be a string')
+    }
+    if (typeof encryptionKeyData !== 'object') {
+      throw new DecryptError('The encryption key data must be an object')
+    }
+    if (typeof encryptionKeyData.salt !== 'string') {
+      throw new DecryptError('The encryption key data does not have salt')
+    }
+    const key = this.revealEncryptionKey(oldPassword, encryptionKeyData)
+    return this.maskEncryptionKey(password, encryptionKeyData.salt, key)
+  }
+
+  encryptDoc(key: string, doc: Object) {
+    if (doc.encryptedData) {
+      // The note is already encrypted with the client app. Skip encrypting.
+      return doc
+    }
+    if (typeof key !== 'string') {
+      throw new EncryptError('Invalid key. it must be a String')
+    }
+    if (!doc || typeof doc.body !== 'string') {
+      throw new EncryptError('The doccument must have body field to encrypt')
+    }
+    const data = JSON.stringify(pick(doc, fieldsToEncrypt))
+    const encryptedData = this.encrypt(key, data, {
       inputEncoding: 'utf8',
       outputEncoding: 'base64'
     })
-  }
-}
+    doc.encryptedData = encryptedData
+    fieldsToEncrypt.forEach(field => delete doc[field])
 
-/**
- * @returns {object} The masked encryption key
- */
-export function createEncryptionKey(password) {
-  if (typeof password !== 'string') {
-    throw new Error('The new password must be a string')
-  }
-  const salt = crypto.randomBytes(16).toString('hex')
-  const key = crypto.randomBytes(16).toString('hex')
-  return maskEncryptionKey(password, salt, key)
-}
-
-/**
- * @returns {string} The encryption key
- */
-export function revealEncryptionKey(password, encryptionKeyData) {
-  if (typeof password !== 'string') {
-    throw new Error('The new password must be a string')
-  }
-  if (typeof encryptionKeyData !== 'object') {
-    throw new Error('The encryption key data must be an object')
-  }
-  const { salt } = encryptionKeyData
-  const key = genKey(password, salt, 128)
-  return decrypt(key, encryptionKeyData, {
-    inputEncoding: 'base64',
-    outputEncoding: 'utf8'
-  })
-}
-
-/**
- * @returns {object} The masked encryption key
- */
-export function updateEncryptionKey(oldPassword, password, encryptionKeyData) {
-  if (typeof oldPassword !== 'string') {
-    throw new Error('The old password must be a string')
-  }
-  if (typeof password !== 'string') {
-    throw new Error('The new password must be a string')
-  }
-  if (typeof encryptionKeyData !== 'object') {
-    throw new Error('The encryption key data must be an object')
-  }
-  if (typeof encryptionKeyData.salt !== 'string') {
-    throw new Error('The encryption key data does not have salt')
-  }
-  const key = revealEncryptionKey(oldPassword, encryptionKeyData)
-  return maskEncryptionKey(password, encryptionKeyData.salt, key)
-}
-
-export function encryptNote(key, doc) {
-  // backward compatibility
-  if (doc.encrypted) {
-    logger.info(
-      'The note is already encrypted with the client app. Skip encrypting.'
-    )
     return doc
   }
-  if (!key) {
-    throw new EncryptError('The encryption key must be specified')
-  }
-  if (!doc || typeof doc.body !== 'string') {
-    throw new EncryptError('The doccument must have body field to encrypt')
-  }
-  const data = JSON.stringify(pick(doc, 'title', 'body'))
-  const encryptedData = encrypt(key, data, {
-    inputEncoding: 'utf8',
-    outputEncoding: 'base64'
-  })
-  doc.encryptedData = encryptedData
-  delete doc.body
-  delete doc.title
 
-  return doc
-}
+  decryptDoc(key: string, doc: Object) {
+    // backward compatibility
+    if (doc.encrypted) {
+      logger.info(
+        "The note can't be decrypted because it's encrypted with the client app. Skip decrypting."
+      )
+      return doc
+    }
+    if (!key) {
+      throw new DecryptError('The encryption key must be specified')
+    }
+    if (!doc) {
+      throw new DecryptError('The document must be specified')
+    }
+    if (!doc.encryptedData) {
+      logger.info('The note is not encrypted. Skip decrypting.')
+      return doc
+    }
+    const strJson = this.decrypt(key, doc.encryptedData, {
+      inputEncoding: 'base64',
+      outputEncoding: 'utf8'
+    })
+    if (typeof strJson === 'string') {
+      Object.assign(doc, JSON.parse(strJson))
+    } else {
+      throw new DecryptError('Invalid decrypted data')
+    }
+    delete doc.encryptedData
 
-export function decryptNote(key, doc) {
-  // backward compatibility
-  if (doc.encrypted) {
-    logger.info(
-      "The note can't be decrypted because it's encrypted with the client app. Skip decrypting."
-    )
     return doc
   }
-  if (!key) {
-    throw new DecryptError('The encryption key must be specified')
-  }
-  if (!doc) {
-    throw new DecryptError('The document must be specified')
-  }
-  if (!doc.encryptedData) {
-    logger.info('The note is not encrypted. Skip decrypting.')
-    return doc
-  }
-  const strJson = decrypt(key, doc.encryptedData, {
-    inputEncoding: 'base64',
-    outputEncoding: 'utf8'
-  })
-  Object.assign(doc, JSON.parse(strJson))
-  delete doc.encryptedData
-
-  return doc
 }
