@@ -3,7 +3,7 @@ import logger from './logger'
 import pick from 'lodash.pick'
 import { EncryptError, DecryptError } from './types'
 import CryptoBase from './crypto'
-import type { EncryptionKey } from './types'
+import type { MaskedEncryptionKey } from './types'
 
 const fieldsToEncrypt = ['title', 'body', 'name']
 
@@ -15,7 +15,7 @@ export default class InkdropEncryption extends CryptoBase {
     password: string,
     salt: string,
     encryptionKey: string | Buffer
-  ): EncryptionKey {
+  ): MaskedEncryptionKey {
     const key = this.genKey(password, salt, 128)
     return {
       salt,
@@ -29,7 +29,7 @@ export default class InkdropEncryption extends CryptoBase {
   /**
    * @returns {object} The masked encryption key
    */
-  createEncryptionKey(password: string): EncryptionKey {
+  createEncryptionKey(password: string): MaskedEncryptionKey {
     const { crypto } = this
     if (typeof password !== 'string') {
       throw new EncryptError('The new password must be a string')
@@ -44,7 +44,7 @@ export default class InkdropEncryption extends CryptoBase {
    */
   revealEncryptionKey(
     password: string,
-    encryptionKeyData: EncryptionKey
+    encryptionKeyData: MaskedEncryptionKey
   ): string {
     if (typeof password !== 'string') {
       throw new DecryptError('The new password must be a string')
@@ -71,8 +71,8 @@ export default class InkdropEncryption extends CryptoBase {
   updateEncryptionKey(
     oldPassword: string,
     password: string,
-    encryptionKeyData: EncryptionKey
-  ) {
+    encryptionKeyData: MaskedEncryptionKey
+  ): MaskedEncryptionKey {
     if (typeof oldPassword !== 'string') {
       throw new DecryptError('The old password must be a string')
     }

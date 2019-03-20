@@ -7,7 +7,7 @@ export type EncryptedData = {
   tag: string
 }
 
-export type EncryptionKey = EncryptedData & {
+export type MaskedEncryptionKey = EncryptedData & {
   salt: string
 }
 
