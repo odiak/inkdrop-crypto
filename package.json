@@ -15,7 +15,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/inkdropapp/inkdrop-encrypt.git"
+    "url": "https://github.com/inkdropapp/inkdrop-crypto.git"
   },
   "devDependencies": {
     "@babel/cli": "^7.2.3",
