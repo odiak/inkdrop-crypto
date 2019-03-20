@@ -2,20 +2,15 @@ import crypto from 'crypto'
 
 export const algorithm = 'aes-256-gcm'
 
-export function genKey (password, salt, iter = 90510) {
+export function genKey(password, salt, iter = 90510) {
   if (typeof salt === 'string') {
     salt = Buffer.from(salt, 'hex')
   }
-  const key = crypto.pbkdf2Sync(
-    password,
-    salt,
-    iter,
-    256 / 8,
-    'sha512')
+  const key = crypto.pbkdf2Sync(password, salt, iter, 256 / 8, 'sha512')
   return key.toString('base64').substring(0, 32)
 }
 
-export function createEncryptStream (key) {
+export function createEncryptStream(key) {
   if (typeof key !== 'string') {
     throw new Error('Invalid key. it must be a String')
   }
@@ -28,7 +23,7 @@ export function createEncryptStream (key) {
   }
 }
 
-export function encrypt (key, data, opts) {
+export function encrypt(key, data, opts) {
   const { outputEncoding, inputEncoding } = opts || {}
   if (typeof key !== 'string') {
     throw new Error('Invalid key. it must be a String')
@@ -41,7 +36,7 @@ export function encrypt (key, data, opts) {
     throw new Error('Invalid data, it must be a String or Buffer')
   }
   if (encrypted instanceof Buffer) {
-    encrypted = Buffer.concat([ encrypted, cipher.final(outputEncoding) ])
+    encrypted = Buffer.concat([encrypted, cipher.final(outputEncoding)])
   } else {
     encrypted += cipher.final(outputEncoding)
   }
@@ -54,7 +49,7 @@ export function encrypt (key, data, opts) {
   }
 }
 
-export function createDecryptStream (key, meta) {
+export function createDecryptStream(key, meta) {
   if (typeof key !== 'string') {
     throw new Error('Invalid key. it must be a String')
   }
@@ -68,7 +63,7 @@ export function createDecryptStream (key, meta) {
   return decipher
 }
 
-export function decrypt (key, data, opts) {
+export function decrypt(key, data, opts) {
   const { inputEncoding, outputEncoding } = opts || {}
   if (typeof key !== 'string') {
     throw new Error('Invalid key. it must be a String')
@@ -79,7 +74,7 @@ export function decrypt (key, data, opts) {
   const decipher = createDecryptStream(key, data)
   let decrypted = decipher.update(data.content, inputEncoding, outputEncoding)
   if (decrypted instanceof Buffer) {
-    decrypted = Buffer.concat([ decrypted, decipher.final(outputEncoding) ])
+    decrypted = Buffer.concat([decrypted, decipher.final(outputEncoding)])
   } else {
     decrypted += decipher.final(outputEncoding)
   }

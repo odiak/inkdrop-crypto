@@ -4,14 +4,14 @@ import pick from 'lodash.pick'
 import { genKey, encrypt, decrypt } from './crypto'
 
 class DecryptError extends Error {
-  constructor (message) {
+  constructor(message) {
     super(message)
     this.name = 'DecryptError'
   }
 }
 
 class EncryptError extends Error {
-  constructor (message) {
+  constructor(message) {
     super(message)
     this.name = 'EncryptError'
   }
@@ -20,18 +20,21 @@ class EncryptError extends Error {
 /**
  * @returns {object} The masked encryption key
  */
-export function maskEncryptionKey (password, salt, encryptionKey) {
+export function maskEncryptionKey(password, salt, encryptionKey) {
   const key = genKey(password, salt, 128)
   return {
     salt,
-    ...encrypt(key, encryptionKey, { inputEncoding: 'utf8', outputEncoding: 'base64' })
+    ...encrypt(key, encryptionKey, {
+      inputEncoding: 'utf8',
+      outputEncoding: 'base64'
+    })
   }
 }
 
 /**
  * @returns {object} The masked encryption key
  */
-export function createEncryptionKey (password) {
+export function createEncryptionKey(password) {
   if (typeof password !== 'string') {
     throw new Error('The new password must be a string')
   }
@@ -43,7 +46,7 @@ export function createEncryptionKey (password) {
 /**
  * @returns {string} The encryption key
  */
-export function revealEncryptionKey (password, encryptionKeyData) {
+export function revealEncryptionKey(password, encryptionKeyData) {
   if (typeof password !== 'string') {
     throw new Error('The new password must be a string')
   }
@@ -52,13 +55,16 @@ export function revealEncryptionKey (password, encryptionKeyData) {
   }
   const { salt } = encryptionKeyData
   const key = genKey(password, salt, 128)
-  return decrypt(key, encryptionKeyData, { inputEncoding: 'base64', outputEncoding: 'utf8' })
+  return decrypt(key, encryptionKeyData, {
+    inputEncoding: 'base64',
+    outputEncoding: 'utf8'
+  })
 }
 
 /**
  * @returns {object} The masked encryption key
  */
-export function updateEncryptionKey (oldPassword, password, encryptionKeyData) {
+export function updateEncryptionKey(oldPassword, password, encryptionKeyData) {
   if (typeof oldPassword !== 'string') {
     throw new Error('The old password must be a string')
   }
@@ -75,10 +81,12 @@ export function updateEncryptionKey (oldPassword, password, encryptionKeyData) {
   return maskEncryptionKey(password, encryptionKeyData.salt, key)
 }
 
-export function encryptNote (key, doc) {
+export function encryptNote(key, doc) {
   // backward compatibility
   if (doc.encrypted) {
-    logger.info('The note is already encrypted with the client app. Skip encrypting.')
+    logger.info(
+      'The note is already encrypted with the client app. Skip encrypting.'
+    )
     return doc
   }
   if (!key) {
@@ -88,7 +96,10 @@ export function encryptNote (key, doc) {
     throw new EncryptError('The doccument must have body field to encrypt')
   }
   const data = JSON.stringify(pick(doc, 'title', 'body'))
-  const encryptedData = encrypt(key, data, { inputEncoding: 'utf8', outputEncoding: 'base64' })
+  const encryptedData = encrypt(key, data, {
+    inputEncoding: 'utf8',
+    outputEncoding: 'base64'
+  })
   doc.encryptedData = encryptedData
   delete doc.body
   delete doc.title
@@ -96,10 +107,12 @@ export function encryptNote (key, doc) {
   return doc
 }
 
-export function decryptNote (key, doc) {
+export function decryptNote(key, doc) {
   // backward compatibility
   if (doc.encrypted) {
-    logger.info('The note can\'t be decrypted because it\'s encrypted with the client app. Skip decrypting.')
+    logger.info(
+      "The note can't be decrypted because it's encrypted with the client app. Skip decrypting."
+    )
     return doc
   }
   if (!key) {
@@ -112,7 +125,10 @@ export function decryptNote (key, doc) {
     logger.info('The note is not encrypted. Skip decrypting.')
     return doc
   }
-  const strJson = decrypt(key, doc.encryptedData, { inputEncoding: 'base64', outputEncoding: 'utf8' })
+  const strJson = decrypt(key, doc.encryptedData, {
+    inputEncoding: 'base64',
+    outputEncoding: 'utf8'
+  })
   Object.assign(doc, JSON.parse(strJson))
   delete doc.encryptedData
 
