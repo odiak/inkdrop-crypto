@@ -1,13 +1,14 @@
 // @flow
-import { createEncryptionHelperWithNodeCrypto } from '../src'
+import createEncryptHelper from '../src'
 import test from 'ava'
+import crypto from 'crypto-browserify'
 
 test('check exports', t => {
-  t.is(typeof createEncryptionHelperWithNodeCrypto, 'function')
+  t.is(typeof createEncryptHelper, 'function')
 })
 
 test('generating encryption key', t => {
-  const mod = createEncryptionHelperWithNodeCrypto()
+  const mod = createEncryptHelper(crypto)
   const keyMasked = mod.createEncryptionKey('foo')
   t.is(keyMasked.algorithm, 'aes-256-gcm')
   t.is(typeof keyMasked.content, 'string')
@@ -20,7 +21,7 @@ test('generating encryption key', t => {
 })
 
 test('updating encryption key', t => {
-  const mod = createEncryptionHelperWithNodeCrypto()
+  const mod = createEncryptHelper(crypto)
   const keyMasked = mod.createEncryptionKey('foo')
 
   const keyUpdated = mod.updateEncryptionKey('foo', 'bar', keyMasked)
@@ -39,7 +40,7 @@ test('updating encryption key', t => {
 })
 
 test('encrypt & decrypt document', t => {
-  const mod = createEncryptionHelperWithNodeCrypto()
+  const mod = createEncryptHelper(crypto)
   const pass = 'foo'
   const keyMasked = mod.createEncryptionKey(pass)
   const key = mod.revealEncryptionKey(pass, keyMasked)
