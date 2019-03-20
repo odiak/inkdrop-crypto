@@ -10,7 +10,11 @@
     "lint": "eslint src test",
     "flow": "flow check"
   },
-  "keywords": ["inkdrop", "electron", "react-native"],
+  "keywords": [
+    "inkdrop",
+    "electron",
+    "react-native"
+  ],
   "author": "Takuya Matsuyama <t@inkdrop.app>",
   "license": "MIT",
   "repository": {
@@ -52,5 +56,9 @@
         ]
       }
     }
-  }
+  },
+  "files": [
+    "lib",
+    "interfaces"
+  ]
 }
