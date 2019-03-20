@@ -1,7 +1,7 @@
 {
   "name": "inkdrop-encrypt",
   "version": "1.0.0",
-  "description": "",
+  "description": "Encryption utilities for Inkdrop",
   "main": "lib/index.js",
   "scripts": {
     "dev": "babel src --watch --out-dir ./lib",
@@ -9,8 +9,12 @@
     "test": "ava"
   },
   "keywords": [],
-  "author": "",
+  "author": "Takuya Matsuyama <t@inkdrop.app>",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/inkdropapp/inkdrop-encrypt.git"
+  },
   "devDependencies": {
     "@babel/cli": "^7.2.3",
     "@babel/core": "^7.4.0",
