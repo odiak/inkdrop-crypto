@@ -9,3 +9,5 @@ export function createEncryptionHelperWithNodeCrypto() {
   const crypto = require('crypto')
   return new InkdropEncryption((crypto: any))
 }
+
+export * from './types'

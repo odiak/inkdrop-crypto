@@ -1,10 +1,13 @@
 // @flow
 
-export type EncryptedData = {
+export type EncryptionMetadata = {
   algorithm: string,
-  content: string | Buffer,
   iv: string,
   tag: string
+}
+
+export type EncryptedData = EncryptionMetadata & {
+  content: string | Buffer
 }
 
 export type MaskedEncryptionKey = EncryptedData & {
