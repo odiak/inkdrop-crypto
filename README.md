@@ -15,11 +15,12 @@ const helpers = createEncryptionHelperWithNodeCrypto()
 
 ### React Native
 
-Use [crypto-browserify](https://github.com/crypto-browserify/crypto-browserify) for shimming crypto module in RN environment.
+Use [rn-nodeify](https://github.com/tradle/rn-nodeify) for shimming crypto module in RN environment.
 
 ```
+import './shim'
 import createEncryptionHelper from 'inkdrop-crypto'
-import crypto from 'crypto-browserify'
+import crypto from 'crypto'
 
 const helpers = createEncryptionHelper(crypto)
 ```

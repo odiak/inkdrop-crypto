@@ -107,7 +107,7 @@ export default class CryptoBase {
     let decrypted
     if (typeof data.content === 'string' && inputEncoding) {
       decrypted = decipher.update(data.content, inputEncoding, outputEncoding)
-    } else if (data.content instanceof Buffer && outputEncoding) {
+    } else if (data.content instanceof Buffer) {
       decrypted = decipher.update(data.content, undefined, outputEncoding)
     } else {
       throw new DecryptError(

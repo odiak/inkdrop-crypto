@@ -97,8 +97,8 @@ export default class InkdropEncryption extends CryptoBase {
     if (typeof key !== 'string') {
       throw new EncryptError('Invalid key. it must be a String')
     }
-    if (!doc || typeof doc.body !== 'string') {
-      throw new EncryptError('The doccument must have body field to encrypt')
+    if (!doc) {
+      throw new DecryptError('The document must be specified')
     }
     const data = JSON.stringify(pick(doc, fieldsToEncrypt))
     const encryptedData = this.encrypt(key, data, {
@@ -112,13 +112,6 @@ export default class InkdropEncryption extends CryptoBase {
   }
 
   decryptDoc(key: string, doc: Object) {
-    // backward compatibility
-    if (doc.encrypted) {
-      logger.info(
-        "The note can't be decrypted because it's encrypted with the client app. Skip decrypting."
-      )
-      return doc
-    }
     if (!key) {
       throw new DecryptError('The encryption key must be specified')
     }
@@ -141,5 +134,84 @@ export default class InkdropEncryption extends CryptoBase {
     delete doc.encryptedData
 
     return doc
+  }
+
+  encryptFile(key: string, doc: Object) {
+    if (typeof key !== 'string') {
+      throw new EncryptError('Invalid key. it must be a String')
+    }
+    if (doc && doc._id.startsWith('file:')) {
+      if (doc.encryptionData) {
+        // The note is already encrypted with the client app. Skip encrypting.
+        return doc
+      }
+      if (doc._attachments && doc._attachments.index) {
+        const { index: att } = doc._attachments
+        let data = null
+        if (att.data instanceof Buffer) {
+          data = att.data
+        } else if (typeof att.data === 'string') {
+          data = Buffer.from(att.data, 'base64')
+        } else {
+          throw new EncryptError('Invalid data type')
+        }
+        const encryptedData = this.encrypt(key, data, {
+          inputEncoding: 'binary',
+          outputEncoding: 'base64'
+        })
+        doc._attachments.index.data = encryptedData.content
+        doc.encryptionData = pick(encryptedData, ['algorithm', 'iv', 'tag'])
+        return doc
+      } else {
+        throw new EncryptError('Invalid file document')
+      }
+    } else {
+      throw new EncryptError('Invalid document. It must be a file doc.')
+    }
+  }
+
+  decryptFile(key: string, doc: Object) {
+    if (!key) {
+      throw new DecryptError('The encryption key must be specified')
+    }
+    if (!doc) {
+      throw new DecryptError('The document must be specified')
+    }
+    if (!doc.encryptionData) {
+      logger.info('The file is not encrypted. Skip decrypting.')
+      return doc
+    }
+    if (doc && doc._id.startsWith('file:')) {
+      if (doc.encryptedData) {
+        // The note is already encrypted with the client app. Skip encrypting.
+        return doc
+      }
+      if (doc._attachments && doc._attachments.index) {
+        const { index: att } = doc._attachments
+        let data = null
+        if (att.data instanceof Buffer) {
+          data = att.data
+        } else if (typeof att.data === 'string') {
+          data = Buffer.from(att.data, 'base64')
+        } else {
+          throw new DecryptError('Invalid data type')
+        }
+        const encryptedContent = {
+          ...doc.encryptionData,
+          content: data
+        }
+        const decryptedContent = this.decrypt(key, encryptedContent, {
+          inputEncoding: 'binary'
+        })
+        const decryptedData = decryptedContent.toString('base64')
+        doc._attachments.index.data = decryptedData
+        delete doc.encryptionData
+        return doc
+      } else {
+        throw new DecryptError('Invalid file document')
+      }
+    } else {
+      throw new DecryptError('Invalid document. It must be a file doc.')
+    }
   }
 }

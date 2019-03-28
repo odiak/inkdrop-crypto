@@ -2,13 +2,8 @@
 import InkdropEncryption from './encryption'
 export { InkdropEncryption }
 
-export default function createEncryptHelper(crypto: CryptoModule) {
+export default function createEncryptHelper(crypto: Object) {
   return new InkdropEncryption(crypto)
-}
-
-export function createEncryptionHelperWithNodeCrypto() {
-  const crypto = require('crypto')
-  return new InkdropEncryption((crypto: any))
 }
 
 export * from './types'
