@@ -1,5 +1,6 @@
 // @flow
 import InkdropEncryption from './encryption'
+export { InkdropEncryption }
 
 export default function createEncryptHelper(crypto: CryptoModule) {
   return new InkdropEncryption(crypto)
