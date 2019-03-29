@@ -137,6 +137,7 @@ export default class InkdropEncryption extends CryptoBase {
   }
 
   encryptFile(key: string, doc: Object) {
+    const { crypto } = this
     if (typeof key !== 'string') {
       throw new EncryptError('Invalid key. it must be a String')
     }
@@ -159,8 +160,27 @@ export default class InkdropEncryption extends CryptoBase {
           inputEncoding: 'binary',
           outputEncoding: 'base64'
         })
-        doc._attachments.index.data = encryptedData.content
-        doc.encryptionData = pick(encryptedData, ['algorithm', 'iv', 'tag'])
+        if (typeof encryptedData.content === 'string') {
+          const encryptedBuffer = Buffer.from(encryptedData.content, 'base64')
+          const md5digest = crypto
+            .createHash('md5')
+            .update(encryptedBuffer)
+            .digest('base64')
+          doc._attachments.index = {
+            content_type: `application/${encryptedData.algorithm}-encrypted`,
+            data: encryptedData.content,
+            length: encryptedBuffer.length,
+            digest: 'md5-' + md5digest
+          }
+          doc.encryptionData = pick(encryptedData, ['algorithm', 'iv', 'tag'])
+          doc.contentLength = data.length
+          if (!doc.md5digest) {
+            doc.md5digest = crypto
+              .createHash('md5')
+              .update(data)
+              .digest('hex')
+          }
+        }
         return doc
       } else {
         throw new EncryptError('Invalid file document')
@@ -171,6 +191,7 @@ export default class InkdropEncryption extends CryptoBase {
   }
 
   decryptFile(key: string, doc: Object) {
+    const { crypto } = this
     if (!key) {
       throw new DecryptError('The encryption key must be specified')
     }
@@ -182,10 +203,6 @@ export default class InkdropEncryption extends CryptoBase {
       return doc
     }
     if (doc && doc._id.startsWith('file:')) {
-      if (doc.encryptedData) {
-        // The note is already encrypted with the client app. Skip encrypting.
-        return doc
-      }
       if (doc._attachments && doc._attachments.index) {
         const { index: att } = doc._attachments
         let data = null
@@ -204,7 +221,16 @@ export default class InkdropEncryption extends CryptoBase {
           inputEncoding: 'binary'
         })
         const decryptedData = decryptedContent.toString('base64')
-        doc._attachments.index.data = decryptedData
+        const md5digest = crypto
+          .createHash('md5')
+          .update(decryptedContent)
+          .digest('base64')
+        doc._attachments.index = {
+          data: decryptedData,
+          length: doc.contentLength,
+          content_type: doc.contentType,
+          digest: 'md5-' + md5digest
+        }
         delete doc.encryptionData
         return doc
       } else {

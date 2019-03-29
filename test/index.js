@@ -2,6 +2,10 @@
 import createEncryptionHelper from '../src'
 import test from 'ava'
 
+const imageDataBase64 =
+  'iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAZ5JREFUeNrEVottgzAQJRPQDUgnoBu4nYBu4GyQbuBuQDcgG6QbkE5AMwHZgHYCepbOlWX5d9gQS09CYHznu3t3ryjSVg1gxR1XDxjuZbwBzAi+9JBdggMj4AL4ARwAe8DvVrcXgAlQAUp8FlsZrywGj5iKagsHOgx/aUnJeW3jDG/aeL6xtWnXB76PaxnneMM6UB8z1kRWGsp8fwNugPfA3jfAc25aCq3pxKLNSbvZwnPu6YQiJy3PlsJSzadFTGvR0kUtoRl1dcIstBwstFMp6fBwhs+2kCdNS+451FV4LmfJ01LPcWxYXd9cNeJdSwsrVLAk2pndLGbipfzrLRzKzBeO6A2BOfK/bOFqCZRijk6o0kpSO0r5zviuj4zgZAyuiqKaSiykzkgJi6AU1yKlh9wlYoKK1wy97yDTcWac0VDHcY9jVY7gE757wHH7ieNZX0+AV8AHKuVCU8tSPb9QHag1DXBb2E33COncNacApXTTLmUYpWh+saQF+9QQRVxEa8NYTThiHVwi9ytN+JjLARYhRs0l93+FNv0JMADG1qTgmYgmzwAAAABJRU5ErkJggg=='
+const imageDataBuffer = Buffer.from(imageDataBase64, 'base64')
+
 test.serial('check exports', t => {
   t.is(typeof createEncryptionHelper, 'function')
 })
@@ -54,6 +58,7 @@ test.serial('encrypt & decrypt note', t => {
   }
   const noteEnc = mod.encryptDoc(key, { ...note })
 
+  t.log('Encrypted note:', noteEnc)
   t.is(typeof noteEnc.encryptedData, 'object')
   t.is(typeof noteEnc.encryptedData.algorithm, 'string')
   t.is(typeof noteEnc.encryptedData.content, 'string')
@@ -78,21 +83,27 @@ test.serial('encrypt & decrypt attachment', t => {
     _id: 'file:test',
     name: 'test.txt',
     contentType: 'image/png',
-    contentLength: 13,
+    contentLength: imageDataBuffer.length,
     createdAt: +new Date(),
     publicIn: [],
     _attachments: {
       index: {
         content_type: 'image/png',
-        data:
-          'iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAZ5JREFUeNrEVottgzAQJRPQDUgnoBu4nYBu4GyQbuBuQDcgG6QbkE5AMwHZgHYCepbOlWX5d9gQS09CYHznu3t3ryjSVg1gxR1XDxjuZbwBzAi+9JBdggMj4AL4ARwAe8DvVrcXgAlQAUp8FlsZrywGj5iKagsHOgx/aUnJeW3jDG/aeL6xtWnXB76PaxnneMM6UB8z1kRWGsp8fwNugPfA3jfAc25aCq3pxKLNSbvZwnPu6YQiJy3PlsJSzadFTGvR0kUtoRl1dcIstBwstFMp6fBwhs+2kCdNS+451FV4LmfJ01LPcWxYXd9cNeJdSwsrVLAk2pndLGbipfzrLRzKzBeO6A2BOfK/bOFqCZRijk6o0kpSO0r5zviuj4zgZAyuiqKaSiykzkgJi6AU1yKlh9wlYoKK1wy97yDTcWac0VDHcY9jVY7gE757wHH7ieNZX0+AV8AHKuVCU8tSPb9QHag1DXBb2E33COncNacApXTTLmUYpWh+saQF+9QQRVxEa8NYTThiHVwi9ytN+JjLARYhRs0l93+FNv0JMADG1qTgmYgmzwAAAABJRU5ErkJggg=='
+        data: imageDataBase64
       }
     }
   }
   const plainData = file._attachments.index.data
   const fileEnc = mod.encryptFile(key, { ...file })
 
+  t.log('Encrypted file:', fileEnc)
   t.is(typeof fileEnc._attachments.index.data, 'string')
+  t.is(
+    fileEnc._attachments.index.content_type,
+    'application/aes-256-gcm-encrypted'
+  )
+  t.is(typeof fileEnc._attachments.index.length, 'number')
+  t.is(typeof fileEnc._attachments.index.digest, 'string')
   t.is(typeof fileEnc.encryptionData, 'object')
   t.is(typeof fileEnc.encryptionData.algorithm, 'string')
   t.is(typeof fileEnc.encryptionData.iv, 'string')
@@ -102,4 +113,12 @@ test.serial('encrypt & decrypt attachment', t => {
   t.is(fileDec._id, file._id)
   t.is(fileDec.name, file.name)
   t.is(fileDec._attachments.index.data, plainData)
+  t.is(
+    fileDec._attachments.index.content_type,
+    file._attachments.index.content_type
+  )
+  t.is(fileDec._attachments.index.length, file.contentLength)
+  t.is(typeof fileDec._attachments.index.length, 'number')
+  t.is(typeof fileDec._attachments.index.digest, 'string')
+  t.log('Decrypted file:', fileDec)
 })
