@@ -47,23 +47,32 @@ export default class CryptoBase {
       throw new EncryptError('Invalid key. it must be a String')
     }
     const { algorithm: algo, cipher, iv } = this.createEncryptStream(key)
+
     let encrypted
-    if (typeof data === 'string' && inputEncoding) {
-      encrypted = cipher.update(data, inputEncoding, outputEncoding)
-    } else if (data instanceof Buffer && outputEncoding) {
-      encrypted = cipher.update(data, inputEncoding, outputEncoding)
-    } else {
-      throw new EncryptError(
-        'Encryption failed. Invalid data, it must be a String or Buffer'
-      )
-    }
-    if (encrypted instanceof Buffer && !outputEncoding) {
+    if (typeof outputEncoding !== 'string') {
+      if (typeof data === 'string' && inputEncoding) {
+        encrypted = cipher.update(data, inputEncoding)
+      } else if (data instanceof Buffer) {
+        encrypted = cipher.update(data)
+      } else {
+        throw new EncryptError(
+          'Encryption failed. Invalid data, it must be a String or Buffer'
+        )
+      }
       encrypted = Buffer.concat([encrypted, cipher.final(outputEncoding)])
-    } else if (typeof encrypted === 'string' && outputEncoding) {
-      encrypted += cipher.final(outputEncoding)
     } else {
-      throw new EncryptError('Encryption failed. Invalid output encoding.')
+      if (typeof data === 'string' && inputEncoding) {
+        encrypted = cipher.update(data, inputEncoding, outputEncoding)
+      } else if (data instanceof Buffer) {
+        encrypted = cipher.update(data, inputEncoding, outputEncoding)
+      } else {
+        throw new EncryptError(
+          'Encryption failed. Invalid data, it must be a String or Buffer'
+        )
+      }
+      encrypted += cipher.final(outputEncoding)
     }
+
     const tag = cipher.getAuthTag()
     return {
       algorithm: algo,

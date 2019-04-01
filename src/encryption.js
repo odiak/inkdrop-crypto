@@ -17,13 +17,14 @@ export default class InkdropEncryption extends CryptoBase {
     encryptionKey: string | Buffer
   ): MaskedEncryptionKey {
     const key = this.genKey(password, salt, 128)
-    return {
-      salt,
+    const data: Object = {
       ...this.encrypt(key, encryptionKey, {
         inputEncoding: 'utf8',
         outputEncoding: 'base64'
-      })
+      }),
+      salt
     }
+    return data
   }
 
   /**
@@ -54,10 +55,14 @@ export default class InkdropEncryption extends CryptoBase {
     }
     const { salt } = encryptionKeyData
     const key = this.genKey(password, salt, 128)
-    const revealedKey = this.decrypt(key, encryptionKeyData, {
-      inputEncoding: 'base64',
-      outputEncoding: 'utf8'
-    })
+    const revealedKey = this.decrypt(
+      key,
+      { ...encryptionKeyData },
+      {
+        inputEncoding: 'base64',
+        outputEncoding: 'utf8'
+      }
+    )
     if (typeof revealedKey === 'string') {
       return revealedKey
     } else {

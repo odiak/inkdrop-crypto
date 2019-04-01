@@ -1,7 +1,8 @@
 // @flow
+export type CRYPTO_ALGORITHM = 'aes-256-gcm'
 
 export type EncryptionMetadata = {
-  algorithm: string,
+  algorithm: CRYPTO_ALGORITHM,
   iv: string,
   tag: string
 }
@@ -10,8 +11,12 @@ export type EncryptedData = EncryptionMetadata & {
   content: string | Buffer
 }
 
-export type MaskedEncryptionKey = EncryptedData & {
-  salt: string
+export type MaskedEncryptionKey = {
+  algorithm: CRYPTO_ALGORITHM,
+  iv: string,
+  tag: string,
+  salt: string,
+  content: string
 }
 
 export class DecryptError extends Error {
