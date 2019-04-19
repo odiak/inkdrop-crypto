@@ -2,6 +2,7 @@
 import createEncryptHelper from '../src'
 import test from 'ava'
 import crypto from 'crypto-browserify'
+const iter = 100000
 
 test('check exports', t => {
   t.is(typeof createEncryptHelper, 'function')
@@ -9,22 +10,28 @@ test('check exports', t => {
 
 test('generating encryption key', t => {
   const mod = createEncryptHelper(crypto)
-  const keyMasked = mod.createEncryptionKey('foo')
+  const keyMasked = mod.createEncryptionKey('foo', iter)
   t.is(keyMasked.algorithm, 'aes-256-gcm')
   t.is(typeof keyMasked.content, 'string')
   t.is(typeof keyMasked.iv, 'string')
   t.is(typeof keyMasked.tag, 'string')
   t.is(typeof keyMasked.salt, 'string')
 
-  const key = mod.revealEncryptionKey('foo', keyMasked)
+  const key = mod.revealEncryptionKey('foo', keyMasked, iter)
   t.is(typeof key, 'string')
 })
 
 test('updating encryption key', t => {
   const mod = createEncryptHelper(crypto)
-  const keyMasked = mod.createEncryptionKey('foo')
+  const keyMasked = mod.createEncryptionKey('foo', iter)
 
-  const keyUpdated = mod.updateEncryptionKey('foo', 'bar', keyMasked)
+  const keyUpdated = mod.updateEncryptionKey(
+    'foo',
+    'bar',
+    keyMasked,
+    iter,
+    iter
+  )
   t.is(keyUpdated.algorithm, 'aes-256-gcm')
   t.is(typeof keyUpdated.content, 'string')
   t.is(typeof keyUpdated.iv, 'string')
@@ -35,15 +42,15 @@ test('updating encryption key', t => {
   t.is(keyMasked.tag !== keyUpdated.tag, true)
   t.is(keyMasked.salt === keyUpdated.salt, true)
 
-  const key = mod.revealEncryptionKey('bar', keyUpdated)
+  const key = mod.revealEncryptionKey('bar', keyUpdated, iter)
   t.is(typeof key, 'string')
 })
 
 test('encrypt & decrypt document', t => {
   const mod = createEncryptHelper(crypto)
   const pass = 'foo'
-  const keyMasked = mod.createEncryptionKey(pass)
-  const key = mod.revealEncryptionKey(pass, keyMasked)
+  const keyMasked = mod.createEncryptionKey(pass, iter)
+  const key = mod.revealEncryptionKey(pass, keyMasked, iter)
   const note = {
     _id: 'note:test',
     title: 'title',

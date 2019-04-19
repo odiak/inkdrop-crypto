@@ -11,7 +11,7 @@ export default class CryptoBase {
     this.crypto = crypto
   }
 
-  genKey(password: string, salt: string | Buffer, iter: number = 90510) {
+  genKey(password: string, salt: string | Buffer, iter: number) {
     const { crypto } = this
     if (typeof salt === 'string') {
       salt = Buffer.from(salt, 'hex')

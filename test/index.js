@@ -5,6 +5,7 @@ import test from 'ava'
 const imageDataBase64 =
   'iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAZ5JREFUeNrEVottgzAQJRPQDUgnoBu4nYBu4GyQbuBuQDcgG6QbkE5AMwHZgHYCepbOlWX5d9gQS09CYHznu3t3ryjSVg1gxR1XDxjuZbwBzAi+9JBdggMj4AL4ARwAe8DvVrcXgAlQAUp8FlsZrywGj5iKagsHOgx/aUnJeW3jDG/aeL6xtWnXB76PaxnneMM6UB8z1kRWGsp8fwNugPfA3jfAc25aCq3pxKLNSbvZwnPu6YQiJy3PlsJSzadFTGvR0kUtoRl1dcIstBwstFMp6fBwhs+2kCdNS+451FV4LmfJ01LPcWxYXd9cNeJdSwsrVLAk2pndLGbipfzrLRzKzBeO6A2BOfK/bOFqCZRijk6o0kpSO0r5zviuj4zgZAyuiqKaSiykzkgJi6AU1yKlh9wlYoKK1wy97yDTcWac0VDHcY9jVY7gE757wHH7ieNZX0+AV8AHKuVCU8tSPb9QHag1DXBb2E33COncNacApXTTLmUYpWh+saQF+9QQRVxEa8NYTThiHVwi9ytN+JjLARYhRs0l93+FNv0JMADG1qTgmYgmzwAAAABJRU5ErkJggg=='
 const imageDataBuffer = Buffer.from(imageDataBase64, 'base64')
+const iter = 100000
 
 test.serial('check exports', t => {
   t.is(typeof createEncryptionHelper, 'function')
@@ -12,22 +13,28 @@ test.serial('check exports', t => {
 
 test.serial('generating encryption key', t => {
   const mod = createEncryptionHelper(require('crypto'))
-  const keyMasked = mod.createEncryptionKey('foo')
+  const keyMasked = mod.createEncryptionKey('foo', iter)
   t.is(keyMasked.algorithm, 'aes-256-gcm')
   t.is(typeof keyMasked.content, 'string')
   t.is(typeof keyMasked.iv, 'string')
   t.is(typeof keyMasked.tag, 'string')
   t.is(typeof keyMasked.salt, 'string')
 
-  const key = mod.revealEncryptionKey('foo', keyMasked)
+  const key = mod.revealEncryptionKey('foo', keyMasked, iter)
   t.is(typeof key, 'string')
 })
 
 test.serial('updating encryption key', t => {
   const mod = createEncryptionHelper(require('crypto'))
-  const keyMasked = mod.createEncryptionKey('foo')
+  const keyMasked = mod.createEncryptionKey('foo', iter)
 
-  const keyUpdated = mod.updateEncryptionKey('foo', 'bar', keyMasked)
+  const keyUpdated = mod.updateEncryptionKey(
+    'foo',
+    'bar',
+    keyMasked,
+    iter,
+    iter
+  )
   t.is(keyUpdated.algorithm, 'aes-256-gcm')
   t.is(typeof keyUpdated.content, 'string')
   t.is(typeof keyUpdated.iv, 'string')
@@ -38,15 +45,15 @@ test.serial('updating encryption key', t => {
   t.is(keyMasked.tag !== keyUpdated.tag, true)
   t.is(keyMasked.salt === keyUpdated.salt, true)
 
-  const key = mod.revealEncryptionKey('bar', keyUpdated)
+  const key = mod.revealEncryptionKey('bar', keyUpdated, iter)
   t.is(typeof key, 'string')
 })
 
 test.serial('encrypt & decrypt note', t => {
   const mod = createEncryptionHelper(require('crypto'))
   const pass = 'foo'
-  const keyMasked = mod.createEncryptionKey(pass)
-  const key = mod.revealEncryptionKey(pass, keyMasked)
+  const keyMasked = mod.createEncryptionKey(pass, iter)
+  const key = mod.revealEncryptionKey(pass, keyMasked, iter)
   const note = {
     _id: 'note:test',
     title: 'title',
@@ -77,8 +84,8 @@ test.serial('encrypt & decrypt note', t => {
 test.serial('encrypt & decrypt attachment', t => {
   const mod = createEncryptionHelper(require('crypto'))
   const pass = 'foo'
-  const keyMasked = mod.createEncryptionKey(pass)
-  const key = mod.revealEncryptionKey(pass, keyMasked)
+  const keyMasked = mod.createEncryptionKey(pass, iter)
+  const key = mod.revealEncryptionKey(pass, keyMasked, iter)
   const file = {
     _id: 'file:test',
     name: 'test.txt',

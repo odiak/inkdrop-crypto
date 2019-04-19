@@ -14,9 +14,10 @@ export default class InkdropEncryption extends CryptoBase {
   maskEncryptionKey(
     password: string,
     salt: string,
-    encryptionKey: string | Buffer
+    encryptionKey: string | Buffer,
+    iter: number
   ): MaskedEncryptionKey {
-    const key = this.genKey(password, salt, 128)
+    const key = this.genKey(password, salt, iter)
     const data: Object = {
       ...this.encrypt(key, encryptionKey, {
         inputEncoding: 'utf8',
@@ -30,14 +31,14 @@ export default class InkdropEncryption extends CryptoBase {
   /**
    * @returns {object} The masked encryption key
    */
-  createEncryptionKey(password: string): MaskedEncryptionKey {
+  createEncryptionKey(password: string, iter: number): MaskedEncryptionKey {
     const { crypto } = this
     if (typeof password !== 'string') {
       throw new EncryptError('The new password must be a string')
     }
     const salt = crypto.randomBytes(16).toString('hex')
     const key = crypto.randomBytes(16).toString('hex')
-    return this.maskEncryptionKey(password, salt, key)
+    return this.maskEncryptionKey(password, salt, key, iter)
   }
 
   /**
@@ -45,7 +46,8 @@ export default class InkdropEncryption extends CryptoBase {
    */
   revealEncryptionKey(
     password: string,
-    encryptionKeyData: MaskedEncryptionKey
+    encryptionKeyData: MaskedEncryptionKey,
+    iter: number
   ): string {
     if (typeof password !== 'string') {
       throw new DecryptError('The new password must be a string')
@@ -54,7 +56,7 @@ export default class InkdropEncryption extends CryptoBase {
       throw new DecryptError('The encryption key data must be an object')
     }
     const { salt } = encryptionKeyData
-    const key = this.genKey(password, salt, 128)
+    const key = this.genKey(password, salt, iter)
     const revealedKey = this.decrypt(
       key,
       { ...encryptionKeyData },
@@ -76,7 +78,9 @@ export default class InkdropEncryption extends CryptoBase {
   updateEncryptionKey(
     oldPassword: string,
     password: string,
-    encryptionKeyData: MaskedEncryptionKey
+    encryptionKeyData: MaskedEncryptionKey,
+    oldIter: number,
+    iter: number
   ): MaskedEncryptionKey {
     if (typeof oldPassword !== 'string') {
       throw new DecryptError('The old password must be a string')
@@ -90,8 +94,12 @@ export default class InkdropEncryption extends CryptoBase {
     if (typeof encryptionKeyData.salt !== 'string') {
       throw new DecryptError('The encryption key data does not have salt')
     }
-    const key = this.revealEncryptionKey(oldPassword, encryptionKeyData)
-    return this.maskEncryptionKey(password, encryptionKeyData.salt, key)
+    const key = this.revealEncryptionKey(
+      oldPassword,
+      encryptionKeyData,
+      oldIter
+    )
+    return this.maskEncryptionKey(password, encryptionKeyData.salt, key, iter)
   }
 
   encryptDoc(key: string, doc: Object) {
