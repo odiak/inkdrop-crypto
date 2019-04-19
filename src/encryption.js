@@ -14,8 +14,8 @@ export default class InkdropEncryption extends CryptoBase {
   maskEncryptionKey(
     password: string,
     salt: string,
-    encryptionKey: string | Buffer,
-    iter: number
+    iter: number,
+    encryptionKey: string | Buffer
   ): MaskedEncryptionKey {
     const key = this.genKey(password, salt, iter)
     const data: Object = {
@@ -38,7 +38,7 @@ export default class InkdropEncryption extends CryptoBase {
     }
     const salt = crypto.randomBytes(16).toString('hex')
     const key = crypto.randomBytes(16).toString('hex')
-    return this.maskEncryptionKey(password, salt, key, iter)
+    return this.maskEncryptionKey(password, salt, iter, key)
   }
 
   /**
@@ -77,10 +77,10 @@ export default class InkdropEncryption extends CryptoBase {
    */
   updateEncryptionKey(
     oldPassword: string,
-    password: string,
-    encryptionKeyData: MaskedEncryptionKey,
     oldIter: number,
-    iter: number
+    password: string,
+    iter: number,
+    encryptionKeyData: MaskedEncryptionKey
   ): MaskedEncryptionKey {
     if (typeof oldPassword !== 'string') {
       throw new DecryptError('The old password must be a string')
@@ -99,7 +99,7 @@ export default class InkdropEncryption extends CryptoBase {
       encryptionKeyData,
       oldIter
     )
-    return this.maskEncryptionKey(password, encryptionKeyData.salt, key, iter)
+    return this.maskEncryptionKey(password, encryptionKeyData.salt, iter, key)
   }
 
   encryptDoc(key: string, doc: Object) {

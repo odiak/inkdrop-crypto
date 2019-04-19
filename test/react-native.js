@@ -27,10 +27,10 @@ test('updating encryption key', t => {
 
   const keyUpdated = mod.updateEncryptionKey(
     'foo',
-    'bar',
-    keyMasked,
     iter,
-    iter
+    'bar',
+    iter,
+    keyMasked
   )
   t.is(keyUpdated.algorithm, 'aes-256-gcm')
   t.is(typeof keyUpdated.content, 'string')
