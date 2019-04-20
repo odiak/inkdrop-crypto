@@ -14,13 +14,16 @@ test.serial('check exports', t => {
 test.serial('generating encryption key', t => {
   const mod = createEncryptionHelper(require('crypto'))
   const keyMasked = mod.createEncryptionKey('foo', iter)
+  t.log('masked key:', keyMasked)
   t.is(keyMasked.algorithm, 'aes-256-gcm')
   t.is(typeof keyMasked.content, 'string')
   t.is(typeof keyMasked.iv, 'string')
   t.is(typeof keyMasked.tag, 'string')
   t.is(typeof keyMasked.salt, 'string')
+  t.is(typeof keyMasked.iterations, 'number')
 
-  const key = mod.revealEncryptionKey('foo', keyMasked, iter)
+  const key = mod.revealEncryptionKey('foo', keyMasked)
+  t.log('key:', key)
   t.is(typeof key, 'string')
 })
 
@@ -28,24 +31,19 @@ test.serial('updating encryption key', t => {
   const mod = createEncryptionHelper(require('crypto'))
   const keyMasked = mod.createEncryptionKey('foo', iter)
 
-  const keyUpdated = mod.updateEncryptionKey(
-    'foo',
-    iter,
-    'bar',
-    iter,
-    keyMasked
-  )
+  const keyUpdated = mod.updateEncryptionKey('foo', 'bar', iter, keyMasked)
   t.is(keyUpdated.algorithm, 'aes-256-gcm')
   t.is(typeof keyUpdated.content, 'string')
   t.is(typeof keyUpdated.iv, 'string')
   t.is(typeof keyUpdated.tag, 'string')
   t.is(typeof keyUpdated.salt, 'string')
+  t.is(typeof keyUpdated.iterations, 'number')
   t.is(keyMasked.content !== keyUpdated.content, true)
   t.is(keyMasked.iv !== keyUpdated.iv, true)
   t.is(keyMasked.tag !== keyUpdated.tag, true)
   t.is(keyMasked.salt === keyUpdated.salt, true)
 
-  const key = mod.revealEncryptionKey('bar', keyUpdated, iter)
+  const key = mod.revealEncryptionKey('bar', keyUpdated)
   t.is(typeof key, 'string')
 })
 
@@ -53,7 +51,7 @@ test.serial('encrypt & decrypt note', t => {
   const mod = createEncryptionHelper(require('crypto'))
   const pass = 'foo'
   const keyMasked = mod.createEncryptionKey(pass, iter)
-  const key = mod.revealEncryptionKey(pass, keyMasked, iter)
+  const key = mod.revealEncryptionKey(pass, keyMasked)
   const note = {
     _id: 'note:test',
     title: 'title',
@@ -85,7 +83,7 @@ test.serial('encrypt & decrypt attachment', t => {
   const mod = createEncryptionHelper(require('crypto'))
   const pass = 'foo'
   const keyMasked = mod.createEncryptionKey(pass, iter)
-  const key = mod.revealEncryptionKey(pass, keyMasked, iter)
+  const key = mod.revealEncryptionKey(pass, keyMasked)
   const file = {
     _id: 'file:test',
     name: 'test.txt',

@@ -16,6 +16,7 @@ export type MaskedEncryptionKey = {
   iv: string,
   tag: string,
   salt: string,
+  iterations: number,
   content: string
 }
 
