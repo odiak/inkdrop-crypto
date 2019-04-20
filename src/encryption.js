@@ -35,7 +35,10 @@ export default class InkdropEncryption extends CryptoBase {
   createEncryptionKey(password: string, iter: number): MaskedEncryptionKey {
     const { crypto } = this
     if (typeof password !== 'string') {
-      throw new EncryptError('The new password must be a string')
+      throw new EncryptError('The password must be a string')
+    }
+    if (typeof iter !== 'number') {
+      throw new EncryptError('The iteration must be a number')
     }
     const salt = crypto.randomBytes(16).toString('hex')
     const key = crypto.randomBytes(16).toString('hex')
@@ -86,6 +89,9 @@ export default class InkdropEncryption extends CryptoBase {
     }
     if (typeof password !== 'string') {
       throw new EncryptError('The new password must be a string')
+    }
+    if (typeof iter !== 'number') {
+      throw new EncryptError('The iteration must be a number')
     }
     if (typeof encryptionKeyData !== 'object') {
       throw new DecryptError('The encryption key data must be an object')
