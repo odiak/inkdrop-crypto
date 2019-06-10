@@ -125,10 +125,19 @@ export default class CryptoBase {
     }
 
     if (decrypted instanceof Buffer && typeof outputEncoding !== 'string') {
-      return Buffer.concat([decrypted, decipher.final()])
+      try {
+        const final = decipher.final()
+        return Buffer.concat([decrypted, final])
+      } catch (e) {
+        return decrypted
+      }
     } else if (typeof decrypted === 'string' && outputEncoding) {
-      decrypted += decipher.final(outputEncoding)
-      return decrypted
+      try {
+        const final = decipher.final(outputEncoding)
+        return decrypted + final
+      } catch (e) {
+        return decrypted
+      }
     } else {
       throw new DecryptError('Failed to decrypt. Invalid output encoding.')
     }
