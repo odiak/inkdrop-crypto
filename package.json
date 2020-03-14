@@ -23,24 +23,25 @@
     "url": "https://github.com/inkdropapp/inkdrop-crypto.git"
   },
   "devDependencies": {
-    "@babel/cli": "^7.2.3",
-    "@babel/core": "^7.4.0",
-    "@babel/plugin-proposal-class-properties": "^7.4.0",
-    "@babel/plugin-proposal-object-rest-spread": "^7.4.0",
-    "@babel/preset-env": "^7.4.1",
-    "@babel/preset-flow": "^7.0.0",
-    "@babel/register": "^7.4.0",
-    "ava": "^1.3.1",
-    "babel-eslint": "^10.0.1",
+    "@ava/babel": "^1.0.1",
+    "@babel/cli": "^7.8.4",
+    "@babel/core": "^7.8.7",
+    "@babel/plugin-proposal-class-properties": "^7.8.3",
+    "@babel/plugin-proposal-object-rest-spread": "^7.8.3",
+    "@babel/preset-env": "^7.8.7",
+    "@babel/preset-flow": "^7.8.3",
+    "@babel/register": "^7.8.6",
+    "ava": "^3.5.0",
+    "babel-eslint": "^10.1.0",
     "crypto-browserify": "^3.12.0",
-    "eslint": "^5.15.3",
-    "eslint-config-prettier": "^4.1.0",
-    "eslint-plugin-flowtype": "^3.4.2",
-    "eslint-plugin-prettier": "^3.0.1",
-    "flow-bin": "^0.95.1",
-    "flow-copy-source": "^2.0.3",
+    "eslint": "^6.8.0",
+    "eslint-config-prettier": "^6.10.0",
+    "eslint-plugin-flowtype": "^4.6.0",
+    "eslint-plugin-prettier": "^3.1.2",
+    "flow-bin": "^0.120.1",
+    "flow-copy-source": "^2.0.9",
     "npm-run-all": "^4.1.5",
-    "prettier": "^1.16.4"
+    "prettier": "^1.19.1"
   },
   "dependencies": {
     "debug": "^4.1.1",
@@ -50,14 +51,7 @@
     "require": [
       "@babel/register"
     ],
-    "babel": {
-      "testOptions": {
-        "presets": [
-          "@ava/stage-4",
-          "@babel/preset-flow"
-        ]
-      }
-    }
+    "babel": true
   },
   "files": [
     "lib",
