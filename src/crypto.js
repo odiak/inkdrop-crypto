@@ -1,9 +1,19 @@
 // @flow
 import type { EncryptedData } from './types'
 import { EncryptError, DecryptError } from './types'
-import type { PlainDataEncodingType, EncryptedDataEncodingType } from './types'
+import type {
+  PlainDataEncodingType,
+  EncryptedDataEncodingType,
+  CRYPTO_ALGORITHM
+} from './types'
 
-export const algorithm = 'aes-256-gcm'
+export const algorithm: CRYPTO_ALGORITHM = 'aes-256-gcm'
+
+type EncryptionStream = {
+  algorithm: CRYPTO_ALGORITHM,
+  cipher: Object,
+  iv: string
+}
 
 export default class CryptoBase {
   crypto: CryptoModule
@@ -11,7 +21,7 @@ export default class CryptoBase {
     this.crypto = crypto
   }
 
-  genKey(password: string, salt: string | Buffer, iter: number) {
+  genKey(password: string, salt: string | Buffer, iter: number): string {
     const { crypto } = this
     if (typeof salt === 'string') {
       salt = Buffer.from(salt, 'hex')
@@ -20,7 +30,7 @@ export default class CryptoBase {
     return key.toString('base64').substring(0, 32)
   }
 
-  createEncryptStream(key: string) {
+  createEncryptStream(key: string): EncryptionStream {
     const { crypto } = this
     if (typeof key !== 'string') {
       throw new EncryptError('Invalid key. it must be a String')
@@ -82,7 +92,7 @@ export default class CryptoBase {
     }
   }
 
-  createDecryptStream(key: string, meta: EncryptedData) {
+  createDecryptStream(key: string, meta: EncryptedData): Object {
     const { crypto } = this
     if (typeof key !== 'string') {
       throw new DecryptError('Invalid key. it must be a String')
@@ -104,7 +114,7 @@ export default class CryptoBase {
       outputEncoding?: PlainDataEncodingType,
       inputEncoding: EncryptedDataEncodingType
     }
-  ) {
+  ): * {
     const { inputEncoding, outputEncoding } = opts || {}
     if (typeof key !== 'string') {
       throw new DecryptError('Invalid key. it must be a String')

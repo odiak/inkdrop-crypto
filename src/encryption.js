@@ -103,7 +103,7 @@ export default class InkdropEncryption extends CryptoBase {
     return this.maskEncryptionKey(password, encryptionKeyData.salt, iter, key)
   }
 
-  encryptDoc(key: string, doc: Object) {
+  encryptDoc(key: string, doc: Object): Object {
     if (doc.encryptedData) {
       // The note is already encrypted with the client app. Skip encrypting.
       return doc
@@ -125,7 +125,7 @@ export default class InkdropEncryption extends CryptoBase {
     return doc
   }
 
-  decryptDoc(key: string, doc: Object) {
+  decryptDoc(key: string, doc: Object): Object {
     if (!key) {
       throw new DecryptError('The encryption key must be specified')
     }
@@ -150,7 +150,7 @@ export default class InkdropEncryption extends CryptoBase {
     return doc
   }
 
-  encryptFile(key: string, doc: Object) {
+  encryptFile(key: string, doc: Object): Object {
     const { crypto } = this
     if (typeof key !== 'string') {
       throw new EncryptError('Invalid key. it must be a String')
@@ -189,10 +189,7 @@ export default class InkdropEncryption extends CryptoBase {
           doc.encryptionData = pick(encryptedData, ['algorithm', 'iv', 'tag'])
           doc.contentLength = data.length
           if (!doc.md5digest) {
-            doc.md5digest = crypto
-              .createHash('md5')
-              .update(data)
-              .digest('hex')
+            doc.md5digest = crypto.createHash('md5').update(data).digest('hex')
           }
         }
         return doc
@@ -204,7 +201,7 @@ export default class InkdropEncryption extends CryptoBase {
     }
   }
 
-  decryptFile(key: string, doc: Object) {
+  decryptFile(key: string, doc: Object): Object {
     const { crypto } = this
     if (!key) {
       throw new DecryptError('The encryption key must be specified')

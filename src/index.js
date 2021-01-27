@@ -2,7 +2,7 @@
 import InkdropEncryption from './encryption'
 export { InkdropEncryption }
 
-export default function createEncryptHelper(crypto: Object) {
+export default function createEncryptHelper(crypto: Object): InkdropEncryption {
   return new InkdropEncryption(crypto)
 }
 
