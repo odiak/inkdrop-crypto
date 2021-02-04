@@ -41,7 +41,7 @@ export default class InkdropEncryption extends CryptoBase {
       throw new EncryptError('The iteration must be a number')
     }
     const salt = crypto.randomBytes(16).toString('hex')
-    const key = crypto.randomBytes(16).toString('hex')
+    const key = crypto.randomBytes(32).toString('base64').substring(0, 32)
     return this.maskEncryptionKey(password, salt, iter, key)
   }
 
