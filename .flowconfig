@@ -9,9 +9,10 @@
 [include]
 
 [libs]
-./interfaces/crypto.js
 
 [options]
+emoji=true
+sharedmemory.heap_size=3221225472
 module.file_ext=.coffee
 module.file_ext=.less
 module.file_ext=.js

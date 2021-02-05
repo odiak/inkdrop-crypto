@@ -168,7 +168,7 @@ type crypto$key =
       padding?: string // TODO: enum type in crypto.constants
     }
 
-declare class CryptoModule {
+declare export default class CryptoModule {
   Sign: crypto$Sign;
   Verify: crypto$Verify;
 

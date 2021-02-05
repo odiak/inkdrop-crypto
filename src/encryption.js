@@ -2,12 +2,17 @@
 import logger from './logger'
 import pick from 'lodash.pick'
 import { EncryptError, DecryptError } from './types'
-import CryptoBase from './crypto'
+import type { CryptoBase } from './crypto'
 import type { MaskedEncryptionKey } from './types'
 
 const fieldsToEncrypt = ['title', 'body', 'name']
 
-export default class InkdropEncryption extends CryptoBase {
+export default class InkdropEncryption {
+  helper: CryptoBase
+
+  constructor(helper: CryptoBase) {
+    this.helper = helper
+  }
   /**
    * @returns {object} The masked encryption key
    */
@@ -17,9 +22,9 @@ export default class InkdropEncryption extends CryptoBase {
     iter: number,
     encryptionKey: string | Buffer
   ): MaskedEncryptionKey {
-    const key = this.genKey(password, salt, iter)
+    const key = this.helper.genKey(password, salt, iter)
     const data: Object = {
-      ...this.encrypt(key, encryptionKey, {
+      ...this.helper.encrypt(key, encryptionKey, {
         inputEncoding: 'utf8',
         outputEncoding: 'base64'
       }),
@@ -48,10 +53,10 @@ export default class InkdropEncryption extends CryptoBase {
   /**
    * @returns {string} The encryption key
    */
-  revealEncryptionKey(
+  async revealEncryptionKey(
     password: string,
     encryptionKeyData: MaskedEncryptionKey
-  ): string {
+  ): Promise<string> {
     if (typeof password !== 'string') {
       throw new DecryptError('The new password must be a string')
     }
@@ -59,8 +64,8 @@ export default class InkdropEncryption extends CryptoBase {
       throw new DecryptError('The encryption key data must be an object')
     }
     const { salt, iterations } = encryptionKeyData
-    const key = this.genKey(password, salt, iterations)
-    const revealedKey = this.decrypt(
+    const key = this.helper.genKey(password, salt, iterations)
+    const revealedKey = await this.helper.decrypt(
       key,
       { ...encryptionKeyData },
       {
@@ -78,12 +83,12 @@ export default class InkdropEncryption extends CryptoBase {
   /**
    * @returns {object} The masked encryption key
    */
-  updateEncryptionKey(
+  async updateEncryptionKey(
     oldPassword: string,
     password: string,
     iter: number,
     encryptionKeyData: MaskedEncryptionKey
-  ): MaskedEncryptionKey {
+  ): Promise<MaskedEncryptionKey> {
     if (typeof oldPassword !== 'string') {
       throw new DecryptError('The old password must be a string')
     }
@@ -99,11 +104,11 @@ export default class InkdropEncryption extends CryptoBase {
     if (typeof encryptionKeyData.salt !== 'string') {
       throw new DecryptError('The encryption key data does not have salt')
     }
-    const key = this.revealEncryptionKey(oldPassword, encryptionKeyData)
+    const key = await this.revealEncryptionKey(oldPassword, encryptionKeyData)
     return this.maskEncryptionKey(password, encryptionKeyData.salt, iter, key)
   }
 
-  encryptDoc(key: string, doc: Object): Object {
+  async encryptDoc(key: string, doc: Object): Promise<Object> {
     if (doc.encryptedData) {
       // The note is already encrypted with the client app. Skip encrypting.
       return doc
@@ -115,7 +120,7 @@ export default class InkdropEncryption extends CryptoBase {
       throw new DecryptError('The document must be specified')
     }
     const data = JSON.stringify(pick(doc, fieldsToEncrypt))
-    const encryptedData = this.encrypt(key, data, {
+    const encryptedData = await this.helper.encrypt(key, data, {
       inputEncoding: 'utf8',
       outputEncoding: 'base64'
     })
@@ -125,7 +130,7 @@ export default class InkdropEncryption extends CryptoBase {
     return doc
   }
 
-  decryptDoc(key: string, doc: Object): Object {
+  async decryptDoc(key: string, doc: Object): Promise<Object> {
     if (!key) {
       throw new DecryptError('The encryption key must be specified')
     }
@@ -136,7 +141,7 @@ export default class InkdropEncryption extends CryptoBase {
       logger.info('The note is not encrypted. Skip decrypting.')
       return doc
     }
-    const strJson = this.decrypt(key, doc.encryptedData, {
+    const strJson = await this.helper.decrypt(key, doc.encryptedData, {
       inputEncoding: 'base64',
       outputEncoding: 'utf8'
     })
@@ -150,7 +155,7 @@ export default class InkdropEncryption extends CryptoBase {
     return doc
   }
 
-  encryptFile(key: string, doc: Object): Object {
+  async encryptFile(key: string, doc: Object): Promise<Object> {
     const { crypto } = this
     if (typeof key !== 'string') {
       throw new EncryptError('Invalid key. it must be a String')
@@ -170,7 +175,7 @@ export default class InkdropEncryption extends CryptoBase {
         } else {
           throw new EncryptError('Invalid data type')
         }
-        const encryptedData = this.encrypt(key, data, {
+        const encryptedData = await this.helper.encrypt(key, data, {
           inputEncoding: 'binary',
           outputEncoding: 'base64'
         })
@@ -201,7 +206,7 @@ export default class InkdropEncryption extends CryptoBase {
     }
   }
 
-  decryptFile(key: string, doc: Object): Object {
+  async decryptFile(key: string, doc: Object): Promise<Object> {
     const { crypto } = this
     if (!key) {
       throw new DecryptError('The encryption key must be specified')
@@ -228,9 +233,14 @@ export default class InkdropEncryption extends CryptoBase {
           ...doc.encryptionData,
           content: data
         }
-        const decryptedContent = this.decrypt(key, encryptedContent, {
-          inputEncoding: 'binary'
-        })
+        const decryptedContent = await this.helper.decrypt(
+          key,
+          encryptedContent,
+          {
+            inputEncoding: 'binary',
+            outputEncoding: 'binary'
+          }
+        )
         const decryptedData = decryptedContent.toString('base64')
         const md5digest = crypto
           .createHash('md5')
