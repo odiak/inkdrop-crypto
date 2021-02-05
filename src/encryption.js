@@ -1,6 +1,7 @@
 // @flow
 import logger from './logger'
 import pick from 'lodash.pick'
+import base64 from 'base64-js'
 import { EncryptError, DecryptError } from './types'
 import type { CryptoBase } from './crypto'
 import type { MaskedEncryptionKey } from './types'
@@ -13,21 +14,36 @@ export default class InkdropEncryption {
   constructor(helper: CryptoBase) {
     this.helper = helper
   }
+
   /**
+   * Note: NoteJS only
+   * @returns {string} The key
+   */
+  genKey(password: string, salt: string | Buffer, iter: number): string {
+    const crypto = global.require('crypto')
+    if (typeof salt === 'string') {
+      salt = Buffer.from(salt, 'hex')
+    }
+    const key = crypto.pbkdf2Sync(password, salt, iter, 256 / 8, 'sha512')
+    return key.toString('base64').substring(0, 32)
+  }
+
+  /**
+   * Note: NoteJS only
    * @returns {object} The masked encryption key
    */
-  maskEncryptionKey(
+  async maskEncryptionKey(
     password: string,
     salt: string,
     iter: number,
     encryptionKey: string | Buffer
-  ): MaskedEncryptionKey {
-    const key = this.helper.genKey(password, salt, iter)
+  ): Promise<MaskedEncryptionKey> {
+    const key = this.genKey(password, salt, iter)
     const data: Object = {
-      ...this.helper.encrypt(key, encryptionKey, {
+      ...(await this.helper.encrypt(key, encryptionKey, {
         inputEncoding: 'utf8',
         outputEncoding: 'base64'
-      }),
+      })),
       salt,
       iterations: iter
     }
@@ -35,10 +51,14 @@ export default class InkdropEncryption {
   }
 
   /**
+   * Note: NoteJS only
    * @returns {object} The masked encryption key
    */
-  createEncryptionKey(password: string, iter: number): MaskedEncryptionKey {
-    const { crypto } = this
+  async createEncryptionKey(
+    password: string,
+    iter: number
+  ): Promise<MaskedEncryptionKey> {
+    const crypto = global.require('crypto')
     if (typeof password !== 'string') {
       throw new EncryptError('The password must be a string')
     }
@@ -52,6 +72,7 @@ export default class InkdropEncryption {
 
   /**
    * @returns {string} The encryption key
+   * @todo
    */
   async revealEncryptionKey(
     password: string,
@@ -64,7 +85,7 @@ export default class InkdropEncryption {
       throw new DecryptError('The encryption key data must be an object')
     }
     const { salt, iterations } = encryptionKeyData
-    const key = this.helper.genKey(password, salt, iterations)
+    const key = this.genKey(password, salt, iterations)
     const revealedKey = await this.helper.decrypt(
       key,
       { ...encryptionKeyData },
@@ -81,6 +102,7 @@ export default class InkdropEncryption {
   }
 
   /**
+   * Note: NoteJS only
    * @returns {object} The masked encryption key
    */
   async updateEncryptionKey(
@@ -156,7 +178,6 @@ export default class InkdropEncryption {
   }
 
   async encryptFile(key: string, doc: Object): Promise<Object> {
-    const { crypto } = this
     if (typeof key !== 'string') {
       throw new EncryptError('Invalid key. it must be a String')
     }
@@ -180,21 +201,20 @@ export default class InkdropEncryption {
           outputEncoding: 'base64'
         })
         if (typeof encryptedData.content === 'string') {
-          const encryptedBuffer = Buffer.from(encryptedData.content, 'base64')
-          const md5digest = crypto
-            .createHash('md5')
-            .update(encryptedBuffer)
-            .digest('base64')
+          const md5digest = this.helper.calcMD5Hash(
+            encryptedData.content,
+            'base64'
+          )
           doc._attachments.index = {
             content_type: `application/${encryptedData.algorithm}-encrypted`,
             data: encryptedData.content,
-            length: encryptedBuffer.length,
+            length: base64.byteLength(encryptedData.content),
             digest: 'md5-' + md5digest
           }
           doc.encryptionData = pick(encryptedData, ['algorithm', 'iv', 'tag'])
           doc.contentLength = data.length
           if (!doc.md5digest) {
-            doc.md5digest = crypto.createHash('md5').update(data).digest('hex')
+            doc.md5digest = this.helper.calcMD5Hash(att.data, 'hex')
           }
         }
         return doc
@@ -207,7 +227,6 @@ export default class InkdropEncryption {
   }
 
   async decryptFile(key: string, doc: Object): Promise<Object> {
-    const { crypto } = this
     if (!key) {
       throw new DecryptError('The encryption key must be specified')
     }
@@ -238,16 +257,12 @@ export default class InkdropEncryption {
           encryptedContent,
           {
             inputEncoding: 'binary',
-            outputEncoding: 'binary'
+            outputEncoding: 'base64'
           }
         )
-        const decryptedData = decryptedContent.toString('base64')
-        const md5digest = crypto
-          .createHash('md5')
-          .update(decryptedContent)
-          .digest('base64')
+        const md5digest = this.helper.calcMD5Hash(decryptedContent, 'base64')
         doc._attachments.index = {
-          data: decryptedData,
+          data: decryptedContent,
           length: doc.contentLength,
           content_type: doc.contentType,
           digest: 'md5-' + md5digest

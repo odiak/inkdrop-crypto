@@ -9,7 +9,7 @@ import type {
   CRYPTO_ALGORITHM
 } from './types'
 
-export const algorithm: CRYPTO_ALGORITHM = 'aes-256-gcm'
+const algorithm: CRYPTO_ALGORITHM = 'aes-256-gcm'
 
 type EncryptionStream = {
   algorithm: CRYPTO_ALGORITHM,
@@ -23,13 +23,16 @@ export default class CryptoBaseNode implements CryptoBase {
     this.crypto = crypto
   }
 
-  genKey(password: string, salt: string | Buffer, iter: number): string {
-    const { crypto } = this
-    if (typeof salt === 'string') {
-      salt = Buffer.from(salt, 'hex')
-    }
-    const key = crypto.pbkdf2Sync(password, salt, iter, 256 / 8, 'sha512')
-    return key.toString('base64').substring(0, 32)
+  calcMD5Hash(
+    content: string | Buffer,
+    outputEncoding: 'base64' | 'hex'
+  ): string {
+    return this.crypto
+      .createHash('md5')
+      .update(
+        content instanceof Buffer ? content : Buffer.from(content, 'base64')
+      )
+      .digest(outputEncoding)
   }
 
   createEncryptStream(key: string): EncryptionStream {

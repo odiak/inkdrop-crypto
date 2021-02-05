@@ -1,13 +1,12 @@
 // @flow
 import type { EncryptedData } from './types'
-import type {
-  PlainDataEncodingType,
-  EncryptedDataEncodingType,
-  CRYPTO_ALGORITHM
-} from './types'
+import type { PlainDataEncodingType, EncryptedDataEncodingType } from './types'
 
 export interface CryptoBase {
-  genKey(password: string, salt: string | Buffer, iter: number): string;
+  calcMD5Hash(
+    content: string | Buffer,
+    outputEncoding: 'base64' | 'hex'
+  ): string;
   encrypt(
     key: string,
     data: string | Buffer,

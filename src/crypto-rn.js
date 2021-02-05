@@ -8,7 +8,7 @@ import type {
   CRYPTO_ALGORITHM
 } from './types'
 
-export const algorithm: CRYPTO_ALGORITHM = 'aes-256-gcm'
+const algorithm: CRYPTO_ALGORITHM = 'aes-256-gcm'
 
 export type AesGcmEncryptedData = {
   iv: string,
@@ -31,14 +31,33 @@ export type AesGcmCryptoModule = {
   ): Promise<AesGcmEncryptedData>
 }
 
+type MD5InputEncoding = 'utf8' | 'base64'
+type MD5OutputEncoding = 'hex' | 'base64'
+export type MD5Module = {
+  calc(
+    string: string,
+    inputEncoding: MD5InputEncoding,
+    outputEncoding: MD5OutputEncoding
+  ): string
+}
+
 export default class CryptoBaseRN implements CryptoBase {
   crypto: AesGcmCryptoModule
-  constructor(crypto: AesGcmCryptoModule) {
+  md5: MD5Module
+  constructor(crypto: AesGcmCryptoModule, md5: MD5Module) {
     this.crypto = crypto
+    this.md5 = md5
   }
 
-  genKey(_password: string, _salt: string | Buffer, _iter: number): string {
-    throw new Error('Not implemented')
+  calcMD5Hash(
+    content: string | Buffer,
+    outputEncoding: 'base64' | 'hex'
+  ): string {
+    return this.md5.calc(
+      content instanceof Buffer ? content.toString('base64') : content,
+      'base64',
+      outputEncoding
+    )
   }
 
   async encrypt(
@@ -54,7 +73,10 @@ export default class CryptoBaseRN implements CryptoBase {
       throw new EncryptError('Invalid key. it must be a String')
     }
 
-    const isBinary = inputEncoding === 'binary' || data instanceof Buffer
+    const isBinary =
+      inputEncoding === 'binary' ||
+      inputEncoding === 'base64' ||
+      data instanceof Buffer
     const plainData = data instanceof Buffer ? data.toString('base64') : data
     const sealed = await this.crypto.encrypt(plainData, isBinary, key)
 
@@ -62,13 +84,10 @@ export default class CryptoBaseRN implements CryptoBase {
     if (typeof outputEncoding !== 'string') {
       encrypted = Buffer.from(sealed.content, 'base64')
     } else {
-      if (
-        (outputEncoding !== 'base64' && !isBinary) ||
-        (outputEncoding === 'base64' && isBinary)
-      ) {
+      if (outputEncoding === 'base64') {
         encrypted = sealed.content
       } else {
-        const buf = Buffer.from(sealed.content, inputEncoding)
+        const buf = Buffer.from(sealed.content, 'base64')
         encrypted =
           !outputEncoding || outputEncoding === 'binary'
             ? buf
@@ -104,8 +123,10 @@ export default class CryptoBaseRN implements CryptoBase {
     let ciphertext: string
     if (data.content instanceof Buffer) {
       ciphertext = data.content.toString('base64')
-    } else if (inputEncoding) {
-      ciphertext = Buffer.from(data, inputEncoding).toString('base64')
+    } else if (inputEncoding === 'base64') {
+      ciphertext = data.content
+    } else if (typeof inputEncoding === 'string') {
+      ciphertext = Buffer.from(data.content, inputEncoding).toString('base64')
     } else {
       throw new DecryptError('Invalid data, it must be an Object')
     }

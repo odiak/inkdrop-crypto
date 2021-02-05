@@ -34,5 +34,10 @@ export class EncryptError extends Error {
   }
 }
 
-export type PlainDataEncodingType = 'utf8' | 'ascii' | 'latin1' | 'binary'
+export type PlainDataEncodingType =
+  | 'utf8'
+  | 'ascii'
+  | 'latin1'
+  | 'binary'
+  | 'base64'
 export type EncryptedDataEncodingType = 'latin1' | 'binary' | 'base64' | 'hex'
