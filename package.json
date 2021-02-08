@@ -3,6 +3,7 @@
   "version": "2.0.2",
   "description": "Encryption utilities for Inkdrop",
   "main": "lib/index.js",
+  "source": "src/index",
   "scripts": {
     "dev": "babel src --watch --out-dir ./lib",
     "build": "babel src -d lib && flow-copy-source src lib",
