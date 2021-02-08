@@ -19,7 +19,7 @@ export type AesGcmEncryptedData = {
 export type AesGcmCryptoModule = {
   decrypt(
     base64Ciphertext: string,
-    key: string,
+    base64Key: string,
     iv: string,
     tag: string,
     isBinary: boolean
@@ -27,7 +27,7 @@ export type AesGcmCryptoModule = {
   encrypt(
     plainText: string,
     inBinary: boolean,
-    key: string
+    base64Key: string
   ): Promise<AesGcmEncryptedData>
 }
 
@@ -46,7 +46,8 @@ export type PBKDF2Module = {
     password: ArrayBuffer | string,
     salt: ArrayBuffer | string,
     iterations: number,
-    keyLength: number
+    keyLength: number,
+    algorithm: 'SHA512'
   ): Promise<ArrayBuffer>
 }
 
@@ -72,11 +73,18 @@ export default class CryptoBaseRN implements CryptoBase {
     salt: string | Buffer,
     iter: number
   ): Promise<string> {
-    const abSalt =
-      salt instanceof Buffer
-        ? salt.buffer
-        : new Uint8Array(Buffer.from(salt, 'hex')).buffer
-    const derivation = await this.pbkdf2.hash(password, abSalt, iter, 256 / 8)
+    const bufSalt = salt instanceof Buffer ? salt : Buffer.from(salt, 'hex')
+    const abSalt = bufSalt.buffer.slice(
+      bufSalt.byteOffset,
+      bufSalt.byteOffset + bufSalt.byteLength
+    )
+    const derivation = await this.pbkdf2.hash(
+      password,
+      abSalt,
+      iter,
+      256 / 8,
+      'SHA512'
+    )
     const buffer = Buffer.from(derivation)
     return buffer.toString('base64').substring(0, 32)
   }
@@ -105,12 +113,13 @@ export default class CryptoBaseRN implements CryptoBase {
       throw new EncryptError('Invalid key. it must be a String')
     }
 
+    const keyBase64 = Buffer.from(key, 'utf8').toString('base64')
     const isBinary =
       inputEncoding === 'binary' ||
       inputEncoding === 'base64' ||
       data instanceof Buffer
     const plainData = data instanceof Buffer ? data.toString('base64') : data
-    const sealed = await this.crypto.encrypt(plainData, isBinary, key)
+    const sealed = await this.crypto.encrypt(plainData, isBinary, keyBase64)
 
     let encrypted
     if (typeof outputEncoding !== 'string') {
@@ -151,6 +160,7 @@ export default class CryptoBaseRN implements CryptoBase {
       throw new DecryptError('Invalid data, it must be an Object')
     }
 
+    const keyBase64 = Buffer.from(key, 'utf8').toString('base64')
     const isBinary = !outputEncoding || outputEncoding === 'binary'
     let ciphertext: string
     if (data.content instanceof Buffer) {
@@ -164,7 +174,7 @@ export default class CryptoBaseRN implements CryptoBase {
     }
     const unsealed = await this.crypto.decrypt(
       ciphertext,
-      key,
+      keyBase64,
       data.iv,
       data.tag,
       isBinary

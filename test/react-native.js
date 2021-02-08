@@ -16,14 +16,15 @@ global.require = require
 const cryptoMock = {
   async decrypt(
     base64Ciphertext: string,
-    key: string,
+    base64Key: string,
     ivStr: string,
     tag: string,
     isBinary: boolean
   ): Promise<string> {
-    if (typeof key !== 'string') {
+    if (typeof base64Key !== 'string') {
       throw new DecryptError('Invalid key. it must be a String')
     }
+    const key = Buffer.from(base64Key, 'base64').toString('utf8')
     const iv = Buffer.from(ivStr, 'hex')
     const decipher = crypto.createDecipheriv(algorithm, key, iv)
     decipher.setAuthTag(Buffer.from(tag, 'hex'))
@@ -44,11 +45,12 @@ const cryptoMock = {
   async encrypt(
     plainText: string,
     inBinary: boolean,
-    key: string
+    base64Key: string
   ): Promise<AesGcmEncryptedData> {
-    if (typeof key !== 'string') {
+    if (typeof base64Key !== 'string') {
       throw new EncryptError('Invalid key. it must be a String')
     }
+    const key = Buffer.from(base64Key, 'base64').toString('utf8')
     const iv = crypto.randomBytes(12)
     const cipher = crypto.createCipheriv(algorithm, key, iv)
 
@@ -117,6 +119,7 @@ test('mock', async t => {
 
   const keyRN = await modRN.helper.deriveKey('foo', salt, 1000)
   const keyNode = await modNode.helper.deriveKey('foo', salt, 1000)
+  t.log('derived key:', keyRN)
   t.is(keyRN, keyNode)
 
   const md5RN = modRN.helper.calcMD5Hash('Zm9v', 'hex')
@@ -128,6 +131,7 @@ test('mock', async t => {
     inputEncoding: 'utf8',
     outputEncoding: 'base64'
   })
+  t.log('sealedRN:', sealedRN)
   const sealedNode = await modNode.helper.encrypt(key, 'data', {
     inputEncoding: 'utf8',
     outputEncoding: 'base64'
@@ -141,6 +145,20 @@ test('mock', async t => {
     outputEncoding: 'utf8'
   })
   t.deepEqual(unsealedRN, unsealedNode)
+})
+
+test('revealing encryption key', async t => {
+  const mod = createEncryptHelperForRN(cryptoMock, md5Mock, pbkdf2Mock)
+  const keyMasked = {
+    algorithm: 'aes-256-gcm',
+    content: '1zjc6kUCnVFvpY7DRcC8eGD9nO1+pZJtXuTnKPniAuo=',
+    iterations: 100000,
+    iv: '9103be37426183bc7327323b',
+    salt: 'ea5564336fa562aed21bbcd8ae178464',
+    tag: '227ab98553d5051eaf50de151c075487'
+  }
+  const keyUnmasked = await mod.revealEncryptionKey('foo', keyMasked)
+  t.is(keyUnmasked, '/AnN2+oCb1X7/GAzV5IQLHxLqT+9Milv')
 })
 
 test('generating encryption key', async t => {
