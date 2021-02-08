@@ -5,6 +5,7 @@
 .*/node_modules/graphql/.*/*.flow
 .*/node_modules/conventional-changelog-core/.*
 .*/node_modules/immutable/.*
+<PROJECT_ROOT>/react-native-example/.*
 
 [include]
 
