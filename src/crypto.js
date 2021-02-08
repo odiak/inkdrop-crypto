@@ -9,7 +9,7 @@ export interface CryptoBase {
     iter: number
   ): Promise<string>;
   calcMD5Hash(
-    content: string | Buffer,
+    binaryContent: string | Buffer,
     outputEncoding: 'base64' | 'hex'
   ): string;
   encrypt(

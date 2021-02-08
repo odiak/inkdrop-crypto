@@ -42,7 +42,7 @@ export type MD5Module = {
 }
 
 export type PBKDF2Module = {
-  derive(
+  hash(
     password: ArrayBuffer | string,
     salt: ArrayBuffer | string,
     iterations: number,
@@ -73,8 +73,10 @@ export default class CryptoBaseRN implements CryptoBase {
     iter: number
   ): Promise<string> {
     const abSalt =
-      salt instanceof Buffer ? salt.buffer : Buffer.from(salt, 'hex').buffer
-    const derivation = await this.pbkdf2.derive(password, abSalt, iter, 256 / 8)
+      salt instanceof Buffer
+        ? salt.buffer
+        : new Uint8Array(Buffer.from(salt, 'hex')).buffer
+    const derivation = await this.pbkdf2.hash(password, abSalt, iter, 256 / 8)
     const buffer = Buffer.from(derivation)
     return buffer.toString('base64').substring(0, 32)
   }

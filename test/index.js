@@ -25,7 +25,7 @@ test.serial('generating encryption key', async t => {
   t.is(typeof keyMasked.iterations, 'number')
 
   const key = await mod.revealEncryptionKey('foo', keyMasked)
-  t.log('key:', key)
+  t.log('unmasked key:', key)
   t.is(typeof key, 'string')
 })
 

@@ -26,7 +26,7 @@ export default class CryptoBaseNode implements CryptoBase {
   /**
    * @returns {string} The derived key
    */
-  async genKey(
+  async deriveKey(
     password: string,
     salt: string | Buffer,
     iter: number

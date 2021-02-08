@@ -1,6 +1,7 @@
 // @flow
 import {
   createEncryptHelperForRN,
+  createEncryptHelperForNode,
   type AesGcmEncryptedData,
   EncryptError,
   DecryptError
@@ -72,7 +73,36 @@ const md5Mock = {
     inputEncoding: 'utf8' | 'base64',
     outputEncoding: 'hex' | 'base64'
   ): string {
-    return crypto.createHash('md5').update(content).digest(outputEncoding)
+    return crypto
+      .createHash('md5')
+      .update(Buffer.from(content, 'base64'))
+      .digest(outputEncoding)
+  }
+}
+
+const pbkdf2Mock = {
+  hash(
+    password: ArrayBuffer | string,
+    salt: ArrayBuffer | string,
+    iterations: number,
+    keyLength: number
+  ): Promise<ArrayBuffer> {
+    const bufPassword =
+      password instanceof ArrayBuffer
+        ? Buffer.from(password)
+        : Buffer.from(password, 'utf8')
+    const bufSalt =
+      salt instanceof ArrayBuffer
+        ? Buffer.from(salt)
+        : Buffer.from(salt, 'utf8')
+    const key = crypto.pbkdf2Sync(
+      bufPassword,
+      bufSalt,
+      iterations,
+      keyLength,
+      'sha512'
+    )
+    return Promise.resolve(key.buffer)
   }
 }
 
@@ -80,8 +110,41 @@ test('check exports', t => {
   t.is(typeof createEncryptHelperForRN, 'function')
 })
 
+test('mock', async t => {
+  const modNode = createEncryptHelperForNode()
+  const modRN = createEncryptHelperForRN(cryptoMock, md5Mock, pbkdf2Mock)
+  const salt = '5ea40cea861387bb39fba0faacb9b54e'
+
+  const keyRN = await modRN.helper.deriveKey('foo', salt, 1000)
+  const keyNode = await modNode.helper.deriveKey('foo', salt, 1000)
+  t.is(keyRN, keyNode)
+
+  const md5RN = modRN.helper.calcMD5Hash('Zm9v', 'hex')
+  const md5Node = modNode.helper.calcMD5Hash('Zm9v', 'hex')
+  t.is(md5RN, md5Node)
+
+  const key = 'ei+hoOW4Bk8xQGADwMax9N55hbT7gj7P'
+  const sealedRN = await modRN.helper.encrypt(key, 'data', {
+    inputEncoding: 'utf8',
+    outputEncoding: 'base64'
+  })
+  const sealedNode = await modNode.helper.encrypt(key, 'data', {
+    inputEncoding: 'utf8',
+    outputEncoding: 'base64'
+  })
+  const unsealedRN = await modRN.helper.decrypt(key, sealedNode, {
+    inputEncoding: 'base64',
+    outputEncoding: 'utf8'
+  })
+  const unsealedNode = await modRN.helper.decrypt(key, sealedRN, {
+    inputEncoding: 'base64',
+    outputEncoding: 'utf8'
+  })
+  t.deepEqual(unsealedRN, unsealedNode)
+})
+
 test('generating encryption key', async t => {
-  const mod = createEncryptHelperForRN(cryptoMock, md5Mock)
+  const mod = createEncryptHelperForRN(cryptoMock, md5Mock, pbkdf2Mock)
   const keyMasked = await mod.createEncryptionKey('foo', iter)
   t.log('keyMasked:', keyMasked)
   t.is(keyMasked.algorithm, 'aes-256-gcm')
@@ -96,7 +159,7 @@ test('generating encryption key', async t => {
 })
 
 test('updating encryption key', async t => {
-  const mod = createEncryptHelperForRN(cryptoMock, md5Mock)
+  const mod = createEncryptHelperForRN(cryptoMock, md5Mock, pbkdf2Mock)
   const keyMasked = await mod.createEncryptionKey('foo', iter)
 
   const keyUpdated = await mod.updateEncryptionKey(
@@ -121,7 +184,7 @@ test('updating encryption key', async t => {
 })
 
 test('encrypt & decrypt document', async t => {
-  const mod = createEncryptHelperForRN(cryptoMock, md5Mock)
+  const mod = createEncryptHelperForRN(cryptoMock, md5Mock, pbkdf2Mock)
   const pass = 'foo'
   const keyMasked = await mod.createEncryptionKey(pass, iter)
   const key = await mod.revealEncryptionKey(pass, keyMasked)
