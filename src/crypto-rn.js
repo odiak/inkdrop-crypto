@@ -161,7 +161,10 @@ export default class CryptoBaseRN implements CryptoBase {
     }
 
     const keyBase64 = Buffer.from(key, 'utf8').toString('base64')
-    const isBinary = !outputEncoding || outputEncoding === 'binary'
+    const isBinary =
+      !outputEncoding ||
+      outputEncoding === 'binary' ||
+      outputEncoding === 'base64'
     let ciphertext: string
     if (data.content instanceof Buffer) {
       ciphertext = data.content.toString('base64')
@@ -180,7 +183,8 @@ export default class CryptoBaseRN implements CryptoBase {
       isBinary
     )
 
-    const decrypted = isBinary ? Buffer.from(unsealed, 'base64') : unsealed
-    return decrypted
+    return outputEncoding === 'binary'
+      ? Buffer.from(unsealed, 'base64')
+      : unsealed
   }
 }
