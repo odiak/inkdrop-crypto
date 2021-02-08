@@ -3,6 +3,11 @@ import type { EncryptedData } from './types'
 import type { PlainDataEncodingType, EncryptedDataEncodingType } from './types'
 
 export interface CryptoBase {
+  deriveKey(
+    password: string,
+    salt: string | Buffer,
+    iter: number
+  ): Promise<string>;
   calcMD5Hash(
     content: string | Buffer,
     outputEncoding: 'base64' | 'hex'

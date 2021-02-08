@@ -23,6 +23,22 @@ export default class CryptoBaseNode implements CryptoBase {
     this.crypto = crypto
   }
 
+  /**
+   * @returns {string} The derived key
+   */
+  async genKey(
+    password: string,
+    salt: string | Buffer,
+    iter: number
+  ): Promise<string> {
+    const crypto = global.require('crypto')
+    if (typeof salt === 'string') {
+      salt = Buffer.from(salt, 'hex')
+    }
+    const key = crypto.pbkdf2Sync(password, salt, iter, 256 / 8, 'sha512')
+    return key.toString('base64').substring(0, 32)
+  }
+
   calcMD5Hash(
     content: string | Buffer,
     outputEncoding: 'base64' | 'hex'

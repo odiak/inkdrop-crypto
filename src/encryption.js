@@ -17,19 +17,6 @@ export default class InkdropEncryption {
 
   /**
    * Note: NoteJS only
-   * @returns {string} The key
-   */
-  genKey(password: string, salt: string | Buffer, iter: number): string {
-    const crypto = global.require('crypto')
-    if (typeof salt === 'string') {
-      salt = Buffer.from(salt, 'hex')
-    }
-    const key = crypto.pbkdf2Sync(password, salt, iter, 256 / 8, 'sha512')
-    return key.toString('base64').substring(0, 32)
-  }
-
-  /**
-   * Note: NoteJS only
    * @returns {object} The masked encryption key
    */
   async maskEncryptionKey(
@@ -38,7 +25,7 @@ export default class InkdropEncryption {
     iter: number,
     encryptionKey: string | Buffer
   ): Promise<MaskedEncryptionKey> {
-    const key = this.genKey(password, salt, iter)
+    const key = await this.helper.deriveKey(password, salt, iter)
     const data: Object = {
       ...(await this.helper.encrypt(key, encryptionKey, {
         inputEncoding: 'utf8',
@@ -85,7 +72,7 @@ export default class InkdropEncryption {
       throw new DecryptError('The encryption key data must be an object')
     }
     const { salt, iterations } = encryptionKeyData
-    const key = this.genKey(password, salt, iterations)
+    const key = await this.helper.deriveKey(password, salt, iterations)
     const revealedKey = await this.helper.decrypt(
       key,
       { ...encryptionKeyData },

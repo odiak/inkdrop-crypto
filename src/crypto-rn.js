@@ -41,12 +41,42 @@ export type MD5Module = {
   ): string
 }
 
+export type PBKDF2Module = {
+  derive(
+    password: ArrayBuffer | string,
+    salt: ArrayBuffer | string,
+    iterations: number,
+    keyLength: number
+  ): Promise<ArrayBuffer>
+}
+
 export default class CryptoBaseRN implements CryptoBase {
   crypto: AesGcmCryptoModule
   md5: MD5Module
-  constructor(crypto: AesGcmCryptoModule, md5: MD5Module) {
+  pbkdf2: PBKDF2Module
+  constructor(
+    crypto: AesGcmCryptoModule,
+    md5: MD5Module,
+    pbkdf2: PBKDF2Module
+  ) {
     this.crypto = crypto
     this.md5 = md5
+    this.pbkdf2 = pbkdf2
+  }
+
+  /**
+   * @returns {string} The derived key
+   */
+  async deriveKey(
+    password: string,
+    salt: string | Buffer,
+    iter: number
+  ): Promise<string> {
+    const abSalt =
+      salt instanceof Buffer ? salt.buffer : Buffer.from(salt, 'hex').buffer
+    const derivation = await this.pbkdf2.derive(password, abSalt, iter, 256 / 8)
+    const buffer = Buffer.from(derivation)
+    return buffer.toString('base64').substring(0, 32)
   }
 
   calcMD5Hash(
