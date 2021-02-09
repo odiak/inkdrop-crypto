@@ -238,6 +238,8 @@ PODS:
   - React-jsinspector (0.63.4)
   - react-native-aes-gcm-crypto (0.1.0):
     - React-Core
+  - react-native-quick-base64 (0.1.0):
+    - React-Core
   - react-native-quick-md5 (0.1.0):
     - React-Core
   - react-native-simple-crypto (0.2.15):
@@ -344,6 +346,7 @@ DEPENDENCIES:
   - React-jsiexecutor (from `../node_modules/react-native/ReactCommon/jsiexecutor`)
   - React-jsinspector (from `../node_modules/react-native/ReactCommon/jsinspector`)
   - react-native-aes-gcm-crypto (from `../node_modules/react-native-aes-gcm-crypto`)
+  - react-native-quick-base64 (from `../node_modules/react-native-quick-base64`)
   - react-native-quick-md5 (from `../node_modules/react-native-quick-md5`)
   - react-native-simple-crypto (from `../node_modules/react-native-simple-crypto`)
   - React-RCTActionSheet (from `../node_modules/react-native/Libraries/ActionSheetIOS`)
@@ -406,6 +409,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/jsinspector"
   react-native-aes-gcm-crypto:
     :path: "../node_modules/react-native-aes-gcm-crypto"
+  react-native-quick-base64:
+    :path: "../node_modules/react-native-quick-base64"
   react-native-quick-md5:
     :path: "../node_modules/react-native-quick-md5"
   react-native-simple-crypto:
@@ -461,6 +466,7 @@ SPEC CHECKSUMS:
   React-jsiexecutor: 93bd528844ad21dc07aab1c67cb10abae6df6949
   React-jsinspector: 58aef7155bc9a9683f5b60b35eccea8722a4f53a
   react-native-aes-gcm-crypto: 6eee170ea1dd932c4952a52eff6a1497c0e161b8
+  react-native-quick-base64: 23b3b332512a9f8d1654ac1bf99e7a1aee5f143b
   react-native-quick-md5: a2bd77e79546e282bdda2d4a847d4c61b83dd769
   react-native-simple-crypto: 0fec2ce7aa9441a6c8f90fcd20accc5d62710fec
   React-RCTActionSheet: 89a0ca9f4a06c1f93c26067af074ccdce0f40336

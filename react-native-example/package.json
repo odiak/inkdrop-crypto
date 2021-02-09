@@ -9,10 +9,11 @@
     "start": "react-native start"
   },
   "dependencies": {
-    "buffer": "^6.0.3",
+    "@craftzdog/react-native-buffer": "^6.0.3",
     "react": "16.13.1",
     "react-native": "0.63.4",
     "react-native-aes-gcm-crypto": "^0.1.0",
+    "react-native-quick-base64": "^0.1.0",
     "react-native-quick-md5": "^0.1.0",
     "react-native-simple-crypto": "^0.2.15"
   },
