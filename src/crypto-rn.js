@@ -51,6 +51,8 @@ export type PBKDF2Module = {
   ): Promise<ArrayBuffer>
 }
 
+const keyBase64Memo: { [string]: string } = {}
+
 export default class CryptoBaseRN implements CryptoBase {
   crypto: AesGcmCryptoModule
   md5: MD5Module
@@ -63,6 +65,15 @@ export default class CryptoBaseRN implements CryptoBase {
     this.crypto = crypto
     this.md5 = md5
     this.pbkdf2 = pbkdf2
+  }
+
+  /**
+   * @private
+   */
+  encodeKeyToBase64(key: string): string {
+    const base64 =
+      keyBase64Memo[key] || Buffer.from(key, 'utf8').toString('base64')
+    return (keyBase64Memo[key] = base64)
   }
 
   /**
@@ -113,7 +124,7 @@ export default class CryptoBaseRN implements CryptoBase {
       throw new EncryptError('Invalid key. it must be a String')
     }
 
-    const keyBase64 = Buffer.from(key, 'utf8').toString('base64')
+    const keyBase64 = this.encodeKeyToBase64(key)
     const isBinary =
       inputEncoding === 'binary' ||
       inputEncoding === 'base64' ||
@@ -160,7 +171,7 @@ export default class CryptoBaseRN implements CryptoBase {
       throw new DecryptError('Invalid data, it must be an Object')
     }
 
-    const keyBase64 = Buffer.from(key, 'utf8').toString('base64')
+    const keyBase64 = this.encodeKeyToBase64(key)
     const isBinary =
       !outputEncoding ||
       outputEncoding === 'binary' ||
