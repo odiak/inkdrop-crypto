@@ -59,7 +59,6 @@ export default class InkdropEncryption {
 
   /**
    * @returns {string} The encryption key
-   * @todo
    */
   async revealEncryptionKey(
     password: string,

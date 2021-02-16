@@ -1,11 +1,10 @@
 // @flow
-import {
-  createEncryptHelperForRN,
-  createEncryptHelperForNode,
+import createEncryptHelperForNode from '../src'
+import createEncryptHelperForRN, {
   type AesGcmEncryptedData,
   EncryptError,
   DecryptError
-} from '../src'
+} from '../src/react-native'
 import test from 'ava'
 import crypto from 'crypto'
 const imageDataBase64 =

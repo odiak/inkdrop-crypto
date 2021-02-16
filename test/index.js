@@ -1,5 +1,5 @@
 // @flow
-import { createEncryptHelperForNode } from '../src'
+import createEncryptHelperForNode from '../src'
 import test from 'ava'
 
 global.require = require
