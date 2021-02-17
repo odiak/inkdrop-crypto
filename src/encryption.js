@@ -246,7 +246,10 @@ export default class InkdropEncryption {
             outputEncoding: 'base64'
           }
         )
-        const md5digest = this.helper.calcMD5Hash(decryptedContent, 'base64')
+        const md5digest =
+          typeof doc.md5digest === 'string'
+            ? Buffer.from(doc.md5digest, 'hex').toString('base64')
+            : this.helper.calcMD5Hash(decryptedContent, 'base64')
         doc._attachments.index = {
           data: decryptedContent,
           length: doc.contentLength,
