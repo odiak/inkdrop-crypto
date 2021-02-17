@@ -72,15 +72,21 @@ const cryptoMock = {
 }
 
 const md5Mock = {
-  calc(
-    content: string,
-    inputEncoding: 'utf8' | 'base64',
-    outputEncoding: 'hex' | 'base64'
-  ): string {
+  stringMd5(content: string) {
     return crypto
       .createHash('md5')
-      .update(Buffer.from(content, 'base64'))
-      .digest(outputEncoding)
+      .update(Buffer.from(content, 'utf-8'))
+      .digest('hex')
+  },
+  binaryMd5(content: string | ArrayBuffer) {
+    return crypto
+      .createHash('md5')
+      .update(
+        typeof content === 'string'
+          ? Buffer.from(content, 'binary')
+          : Buffer.from(content)
+      )
+      .digest('hex')
   }
 }
 
