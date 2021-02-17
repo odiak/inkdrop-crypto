@@ -31,14 +31,9 @@ export type AesGcmCryptoModule = {
   ): Promise<AesGcmEncryptedData>
 }
 
-type MD5InputEncoding = 'utf8' | 'base64'
-type MD5OutputEncoding = 'hex' | 'base64'
 export type MD5Module = {
-  calc(
-    string: string,
-    inputEncoding: MD5InputEncoding,
-    outputEncoding: MD5OutputEncoding
-  ): string
+  stringMd5(data: string): string,
+  binaryMd5(data: string | ArrayBuffer): string
 }
 
 export type PBKDF2Module = {
@@ -104,11 +99,14 @@ export default class CryptoBaseRN implements CryptoBase {
     content: string | Buffer,
     outputEncoding: 'base64' | 'hex'
   ): string {
-    return this.md5.calc(
-      content instanceof Buffer ? content.toString('base64') : content,
-      'base64',
-      outputEncoding
-    )
+    const data =
+      content instanceof Buffer
+        ? content.toString('binary')
+        : Buffer.from(content, 'base64').toString('binary')
+    const hexHash = this.md5.binaryMd5(data)
+    return outputEncoding === 'hex'
+      ? hexHash
+      : Buffer.from(hexHash, 'hex').toString('base64')
   }
 
   async encrypt(
