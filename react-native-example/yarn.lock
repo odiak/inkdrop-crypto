@@ -608,6 +608,14 @@
     exec-sh "^0.3.2"
     minimist "^1.2.0"
 
+"@craftzdog/react-native-buffer@^6.0.3":
+  version "6.0.3"
+  resolved "https://registry.yarnpkg.com/@craftzdog/react-native-buffer/-/react-native-buffer-6.0.3.tgz#5d33ab8f77ae498773211c66cce76389c0e11341"
+  integrity sha512-C6snlL97yuzDx5WjPIk4AL+yKn3aHDmPxGzCdTzLOfqp23F9Rl13bCILXIguKvGqf2TLjozPdLGqVOhhgTGT/w==
+  dependencies:
+    ieee754 "^1.2.1"
+    react-native-quick-base64 "^0.1.0"
+
 "@hapi/address@2.x.x":
   version "2.1.4"
   resolved "https://registry.yarnpkg.com/@hapi/address/-/address-2.1.4.tgz#5d67ed43f3fd41a69d4b9ff7b56e7c0d1d0a81e5"
@@ -1116,7 +1124,7 @@ balanced-match@^1.0.0:
   resolved "https://registry.yarnpkg.com/balanced-match/-/balanced-match-1.0.0.tgz#89b4d199ab2bee49de164ea02b89ce462d71b767"
   integrity sha1-ibTRmasr7kneFk6gK4nORi1xt2c=
 
-base64-js@^1.1.2, base64-js@^1.2.3:
+base64-js@^1.1.2, base64-js@^1.2.3, base64-js@^1.3.0:
   version "1.5.1"
   resolved "https://registry.yarnpkg.com/base64-js/-/base64-js-1.5.1.tgz#1b1b440160a5bf7ad40b650f095963481903930a"
   integrity sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA==
@@ -1882,6 +1890,11 @@ find-up@^4.1.0:
     locate-path "^5.0.0"
     path-exists "^4.0.0"
 
+flow-bin@^0.122.0:
+  version "0.122.0"
+  resolved "https://registry.yarnpkg.com/flow-bin/-/flow-bin-0.122.0.tgz#c723a2b33b1a70bd10204704ae1dc776d5d89d79"
+  integrity sha512-my8N5jgl/A+UVby9E7NDppHdhLgRbWgKbmFZSx2MSYMRh3d9YGnM2MM+wexpUpl0ftY1IM6ZcUwaAhrypLyvlA==
+
 for-in@^1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/for-in/-/for-in-1.0.2.tgz#81068d295a8142ec0ac726c6e2200c30fb6d5e80"
@@ -2053,6 +2066,11 @@ hermes-profile-transformer@^0.0.6:
   dependencies:
     source-map "^0.7.3"
 
+hex-lite@^1.5.0:
+  version "1.5.0"
+  resolved "https://registry.yarnpkg.com/hex-lite/-/hex-lite-1.5.0.tgz#482db64f673dcacdb8be93c629a799ce5a76b24d"
+  integrity sha512-bXFMCFoKcksmJ1kDRq6B0+Go5Wgq84Dq/3rX99+0OzBQZKUBEMLguPd1lZSpvmzJACb516n07eyswF4KHAF9cg==
+
 http-errors@~1.7.2:
   version "1.7.3"
   resolved "https://registry.yarnpkg.com/http-errors/-/http-errors-1.7.3.tgz#6c619e4f9c60308c38519498c14fbb10aacebb06"
@@ -2077,6 +2095,11 @@ iconv-lite@^0.6.2:
   integrity sha512-2y91h5OpQlolefMPmUlivelittSWy0rP+oYVpn6A7GwVHNE8AWzoYOBNmlwks3LobaJxgHCYZAnyNo2GgpNRNQ==
   dependencies:
     safer-buffer ">= 2.1.2 < 3.0.0"
+
+ieee754@^1.2.1:
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/ieee754/-/ieee754-1.2.1.tgz#8eb7a10a63fff25d15a57b001586d177d1b0d352"
+  integrity sha512-dcyqhDvX1C46lXZcVqCpK+FtMRQVdIMN6/Df5js2zouUsqG7I6sFxitIC+7KYK29KdXOLHdu9zL4sFnoVQnqaA==
 
 image-size@^0.6.0:
   version "0.6.3"
@@ -3356,6 +3379,29 @@ react-is@^16.12.0, react-is@^16.8.1, react-is@^16.8.4:
   resolved "https://registry.yarnpkg.com/react-is/-/react-is-16.13.1.tgz#789729a4dc36de2999dc156dd6c1d9c18cea56a4"
   integrity sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==
 
+react-native-aes-gcm-crypto@^0.1.0:
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/react-native-aes-gcm-crypto/-/react-native-aes-gcm-crypto-0.1.1.tgz#2bd523ce0116683b004304df195d07be180f8300"
+  integrity sha512-jJv9aPjZgb3ik4GaMT6xYSQ3mIvYICD/Q68NDwmADnAGh4kX+qpMiTASTbWLN47BI/yN9lzBu2IcywYUxj8dag==
+
+react-native-quick-base64@^0.1.0:
+  version "0.1.4"
+  resolved "https://registry.yarnpkg.com/react-native-quick-base64/-/react-native-quick-base64-0.1.4.tgz#14aa6f5c984d9cd0a8133fcaf35d0ade72a351ef"
+  integrity sha512-Qn5vPrhGB20MbafDFYd31LzfUmHDlxCuBB0kjJZG2EOFUu8vGyfd6Bid1BjbCoqQBTWM2SfGHLMoh7CeGpxzaQ==
+
+react-native-quick-md5@^0.1.0:
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/react-native-quick-md5/-/react-native-quick-md5-0.1.2.tgz#bd1b500db653786962d59a5cffeaabf7416d400a"
+  integrity sha512-qsClbZWP59N7D4i3mllok8FKQXBJsjq1T3SnKQXvJp8RR9kb3xW7Y1GRCqormnEZoa/h2o+uhVpruAzAE56hhw==
+
+react-native-simple-crypto@^0.2.15:
+  version "0.2.15"
+  resolved "https://registry.yarnpkg.com/react-native-simple-crypto/-/react-native-simple-crypto-0.2.15.tgz#a665659c58a153e9a32d507c30f327e3c5bdf0e2"
+  integrity sha512-Mc0PgbCyvySOvq2BEVFelOrU0WPlju49ufnwMbL1Ss8aIXLZ52oXfvVWy47yxtrPuOxcxiGi3qMjJt5mKD1hOA==
+  dependencies:
+    base64-js "^1.3.0"
+    hex-lite "^1.5.0"
+
 react-native@0.63.4:
   version "0.63.4"
   resolved "https://registry.yarnpkg.com/react-native/-/react-native-0.63.4.tgz#2210fdd404c94a5fa6b423c6de86f8e48810ec36"
@@ -4033,9 +4079,9 @@ typedarray@^0.0.6:
   integrity sha1-hnrHTjhkGHsdPUfZlqeOxciDB3c=
 
 ua-parser-js@^0.7.18:
-  version "0.7.23"
-  resolved "https://registry.yarnpkg.com/ua-parser-js/-/ua-parser-js-0.7.23.tgz#704d67f951e13195fbcd3d78818577f5bc1d547b"
-  integrity sha512-m4hvMLxgGHXG3O3fQVAyyAQpZzDOvwnhOTjYz5Xmr7r/+LpkNy3vJXdVRWgd1TkAb7NGROZuSy96CrlNVjA7KA==
+  version "0.7.28"
+  resolved "https://registry.yarnpkg.com/ua-parser-js/-/ua-parser-js-0.7.28.tgz#8ba04e653f35ce210239c64661685bf9121dec31"
+  integrity sha512-6Gurc1n//gjp9eQNXjD9O3M/sMwVtN5S8Lv9bvOYBfKfDNiIIhqiyi01vMBO45u4zkDE420w/e0se7Vs+sIg+g==
 
 uglify-es@^3.1.9:
   version "3.3.9"
